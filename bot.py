@@ -61,7 +61,7 @@ def shell(bot, update):
 @replyerrors
 def snapshot(bot, update):
     panels = {
-        'indexers': 'https://s.yasm.yandex-team.ru/panel/ssmike._GpjE3A/',
+        'indexer': 'https://s.yasm.yandex-team.ru/panel/ssmike._GpjE3A/',
         'cluster': 'https://s.yasm.yandex-team.ru/panel/ssmike._lKsvaf/',
         'replicator': 'https://s.yasm.yandex-team.ru/panel/ssmike._mSIC52',
         'knocker': 'https://s.yasm.yandex-team.ru/panel/ssmike._MDyCJy',
