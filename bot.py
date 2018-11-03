@@ -39,6 +39,12 @@ def owner(user):
     return guard(pred)
 
 
+def owners(users):
+    def pred(chat):
+        return chat.type == 'private' and chat.username in users
+    return guard(pred)
+
+
 @command('dump')
 @owner('ssmike')
 def dump(bot, message):
