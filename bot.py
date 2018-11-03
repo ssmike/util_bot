@@ -74,7 +74,7 @@ def snapshot(bot, update):
     }
     panel = update.message.text.split(' ', 1)
     if len(panel) == 1:
-        update.message.reply_text('available charts: ' + ' '.join(panels.keys()), quote=True)
+        update.message.reply_text('available panels: ' + ' '.join(panels.keys()), quote=True)
         return
     panel = panel[1]
 
