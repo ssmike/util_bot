@@ -1,14 +1,15 @@
 from telegram.ext import Updater, CommandHandler
-from os import environ
+import os
 import requests
 import subprocess
 
-updater = Updater(environ['TELEGRAM_TOKEN'])
+updater = Updater(os.environ['TELEGRAM_TOKEN'])
 
 
 def command(command):
     def decorator(func):
         updater.dispatcher.add_handler(CommandHandler(command, func))
+        return func
     return decorator
 
 
@@ -67,14 +68,31 @@ def dump(bot, message):
     print(message)
 
 
+def get_call_result(command):
+    p = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
+    out = p.stdout.read()
+    return out.decode('utf-8')
+
+
 @command('shell')
 @owner('ssmike')
 @replyerrors
 def shell(bot, update):
     command = update.message.text.split(' ', 1)[1]
-    p = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
-    out = p.stdout.read()
-    update.message.reply_text(out.decode('utf-8'), quote=True)
+    update.message.reply_text(get_call_result(command), quote=True)
+
+
+@command('free')
+@owner('ssmike')
+def free(bot, update):
+    update.message.reply_text(get_call_result('free -m'), quote=True)
+
+
+@command('deploy')
+@owner('ssmike')
+def deploy(bot, update):
+    subprocess.check_call('git pull')
+    os.execlp('python', 'bot.py')
 
 
 @command('yasm')
