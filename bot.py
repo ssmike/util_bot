@@ -91,7 +91,7 @@ def free(bot, update):
 @command('deploy')
 @owner('ssmike')
 def deploy(bot, update):
-    subprocess.check_call(['git' 'pull'])
+    subprocess.check_call(['git', 'pull'])
     print('redeploying')
     os.execlp('python', 'bot.py')
 
