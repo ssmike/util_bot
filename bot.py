@@ -93,7 +93,7 @@ def free(bot, update):
 def deploy(bot, update):
     subprocess.check_call(['git', 'pull'])
     print('redeploying')
-    os.execlp('python', 'bot.py')
+    os.execlp('python', 'python', 'bot.py')
 
 
 @command('yasm')
