@@ -57,7 +57,7 @@ def dump(bot, message):
 @replyerrors
 def shell(bot, update):
     command = update.message.text.split(' ', 1)[1]
-    p = subprocess.check_call(command, shell=True, stdout=subprocess.PIPE)
+    p = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
     out = p.stdout.read()
     update.message.reply_text(out.decode('utf-8'), quote=True)
 
