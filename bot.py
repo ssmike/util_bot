@@ -93,7 +93,7 @@ def free(bot, update):
 def deploy(bot, update):
     for command in [['git', 'checkout', '-f'], ['git', 'pull']]:
         print(command)
-        subprocess.check_call(*command)
+        subprocess.check_call(command)
     print(['python', 'bot.py'])
     os.execlp('python', 'python', 'bot.py')
 
