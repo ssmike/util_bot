@@ -33,6 +33,21 @@ def guard(predicate):
     return decorator
 
 
+def retry(cnt):
+    def decorator(func):
+        def handler(bot, update):
+            for i in range(cnt):
+                try:
+                    func(bot, update)
+                    break
+                except Exception as e:
+                    print('retrying {}'.format(e))
+                    if i == (cnt - 1):
+                        raise e
+        return handler
+    return decorator
+
+
 def owner(user):
     def pred(chat):
         return chat.type == 'private' and chat.username == user
@@ -65,9 +80,10 @@ def shell(bot, update):
 @command('yasm')
 @owner('ssmike')
 @replyerrors
+@retry(3)
 def snapshot(bot, update):
     panels = {
-        'indexer': 'https://s.yasm.yandex-team.ru/panel/ssmike._GpjE3A/',
+        'indexer': 'https://s.yasm.yandex-team.ru/panel/ssmike._GpjE3A/?range=86400000',
         'cluster': 'https://s.yasm.yandex-team.ru/panel/ssmike._lKsvaf/',
         'replicator': 'https://s.yasm.yandex-team.ru/panel/ssmike._mSIC52',
         'knocker': 'https://s.yasm.yandex-team.ru/panel/ssmike._MDyCJy',
@@ -81,8 +97,8 @@ def snapshot(bot, update):
     if panel not in panels:
         update.message.reply_text('invalid panel')
     else:
-        resp = requests.get(panels[panel], verify=False, stream=True)
-        update.message.reply_photo(photo=resp.raw, quote=True)
+        with requests.get(panels[panel], verify=False, stream=True) as resp:
+            update.message.reply_photo(photo=resp.raw, quote=True)
 
 
 updater.start_polling()
