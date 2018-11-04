@@ -14,7 +14,6 @@ class TgHandler(logging.Handler):
         logging.Handler.__init__(self, logging.INFO)
         self.chat_id = chat_id
 
-
     def emit(self, entry):
         updater.bot.send_message(self.chat_id, self.format(entry))
 
@@ -135,24 +134,24 @@ def snapshot(bot, update):
             update.message.reply_photo(photo=resp.raw, quote=True)
 
 
-@command('log_level')
-@owner('ssmike')
-def set_loglevel(bot, update):
-    level = update.message.text.split(' ', 1)[1]
-    log.info(level)
-    log.setLevel({
-        'info': logging.INFO,
-        'debug': logging.DEBUG,
-        'error': logging.ERROR}[level])
+handlers = {}
 
 
 @command('log')
 @owner('ssmike')
 def switch_reply_logging(bot, update):
+    "I know it is not thread safe"
+    global handlers
+    chat_id = update.message.chat.id
     if update.message.text.split(' ', 1)[1] == 'enable':
-        logging.getLogger().addHandler(TgHandler(update.message.chat.id))
+        if chat_id not in handlers:
+            handler = TgHandler(chat_id)
+            handlers[chat_id] = handler
+            logging.getLogger().addHandler(handler)
     else:
-        logging.getLogger().removeHandler(TgHandler(update.message.chat.id))
+        if chat_id in handlers:
+            logging.getLogger().removeHandler(handlers[chat_id])
+            del handlers[chat_id]
 
 
 updater.start_polling()
