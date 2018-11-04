@@ -87,7 +87,10 @@ def dump(bot, update):
 def get_call_result(command):
     p = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
     out = p.stdout.read()
-    return out.decode('utf-8')
+    if len(out) == 0:
+        return 'empty output'
+    else:
+        return out.decode('utf-8')
 
 
 @command('shell')
