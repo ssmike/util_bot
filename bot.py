@@ -136,7 +136,7 @@ def snapshot(bot, update):
 @command('log_level')
 @owner('ssmike')
 def set_loglevel(bot, update):
-    level = update.message.text.split(' ', 1)
+    level = update.message.text.split(' ', 1)[1]
     log.info(level)
     log.setLevel({
         'info': logging.INFO,
@@ -147,7 +147,7 @@ def set_loglevel(bot, update):
 @command('log')
 @owner('ssmike')
 def switch_reply_logging(bot, update):
-    if update.message.text.split(' ', 1) == 'enable':
+    if update.message.text.split(' ', 1)[1] == 'enable':
         log.addHandler(TgHandler(update.message.chat.id))
     else:
         log.removeHandler(TgHandler(update.message.chat.id))
