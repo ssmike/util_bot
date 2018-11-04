@@ -11,10 +11,12 @@ log = logging.getLogger(__name__)
 
 class TgHandler(logging.Handler):
     def __init__(self, chat_id):
-        self.id = chat_id
+        logging.Handler.__init__(self, logging.INFO)
+        self.chat_id = chat_id
+
 
     def emit(self, entry):
-        updater.bot.send_message(self.id, self.format(entry))
+        updater.bot.send_message(self.chat_id, self.format(entry))
 
 
 def command(command):
