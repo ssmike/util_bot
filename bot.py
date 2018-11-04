@@ -2,8 +2,11 @@ from telegram.ext import Updater, CommandHandler
 import os
 import requests
 import subprocess
+import logging
+from logging import warn, info, error, exception
 
 updater = Updater(os.environ['TELEGRAM_TOKEN'])
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
 
 def command(command):
@@ -19,6 +22,7 @@ def replyerrors(func):
             func(bot, update)
         except Exception as e:
             update.message.reply_text('error: ' + str(e), quote=True)
+            raise e
     return result
 
 
@@ -29,7 +33,7 @@ def guard(predicate):
             if predicate(chat):
                 func(bot, update)
             else:
-                print('denied access for', chat)
+                info('denied access for %s', chat)
         return handler
     return decorator
 
@@ -42,7 +46,7 @@ def retry(cnt):
                     func(bot, update)
                     break
                 except Exception as e:
-                    print('retrying {}'.format(e))
+                    exception(e)
                     if i == (cnt - 1):
                         raise e
         return handler
@@ -64,8 +68,7 @@ def owners(users):
 @command('dump')
 @owner('ssmike')
 def dump(bot, message):
-    print(bot)
-    print(message)
+    info("%s\n%s", bot, message)
 
 
 def get_call_result(command):
@@ -92,9 +95,9 @@ def free(bot, update):
 @owner('ssmike')
 def deploy(bot, update):
     for command in [['git', 'checkout', '-f'], ['git', 'pull']]:
-        print(command)
+        info("%s", command)
         subprocess.check_call(command)
-    print(['python', 'bot.py'])
+    info("%s", ['python', 'bot.py'])
     os.execlp('python', 'python', 'bot.py')
 
 
