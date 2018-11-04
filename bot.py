@@ -3,10 +3,10 @@ import os
 import requests
 import subprocess
 import logging
-from logging import warn, info, error, exception
 
 updater = Updater(os.environ['TELEGRAM_TOKEN'])
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+log = logging.getLogger(__name__)
 
 
 def command(command):
@@ -33,7 +33,7 @@ def guard(predicate):
             if predicate(chat):
                 func(bot, update)
             else:
-                info('denied access for %s', chat)
+                log.info('denied access for %s', chat)
         return handler
     return decorator
 
@@ -46,7 +46,7 @@ def retry(cnt):
                     func(bot, update)
                     break
                 except Exception as e:
-                    exception(e)
+                    log.exception(e)
                     if i == (cnt - 1):
                         raise e
         return handler
@@ -68,7 +68,7 @@ def owners(users):
 @command('dump')
 @owner('ssmike')
 def dump(bot, message):
-    info("%s\n%s", bot, message)
+    log.info("%s\n%s", bot, message)
 
 
 def get_call_result(command):
@@ -95,9 +95,9 @@ def free(bot, update):
 @owner('ssmike')
 def deploy(bot, update):
     for command in [['git', 'checkout', '-f'], ['git', 'pull']]:
-        info("%s", command)
+        log.info("%s", command)
         subprocess.check_call(command)
-    info("%s", ['python', 'bot.py'])
+    log.info("%s", ['python', 'bot.py'])
     os.execlp('python', 'python', 'bot.py')
 
 
@@ -125,11 +125,15 @@ def snapshot(bot, update):
             update.message.reply_photo(photo=resp.raw, quote=True)
 
 
-@command('log')
+@command('log_level')
 @owner('ssmike')
 def set_loglevel(bot, update):
     level = update.message.text.split(' ', 1)
-    info(level)
+    log.info(level)
+    log.setLevel({
+        'info': logging.INFO,
+        'debug': logging.DEBUG,
+        'error': logging.ERROR}[level])
 
 
 updater.start_polling()
