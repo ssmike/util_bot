@@ -119,7 +119,9 @@ def free(bot, update):
 @command('deploy')
 @owner('ssmike')
 def deploy(bot, update):
-    for command in [['git', 'checkout', '-f'], ['git', 'pull']]:
+    for command in [['pip', 'install', '-r', 'requirements.txt'],
+                    ['git', 'checkout', '-f'],
+                    ['git', 'pull']]:
         log.info("%s", command)
         subprocess.check_call(command)
     log.info("%s", ['python', 'bot.py'])
@@ -153,7 +155,7 @@ def snapshot(bot, update):
 
 @command('log')
 @owner('ssmike')
-def switch_reply_logging(bot, update):
+def toggle_logging(bot, update):
     global enabled_logging
     chat_id = update.message.chat.id
     action = update.message.text.split(' ', 1)[1]
