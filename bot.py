@@ -3,31 +3,42 @@ import os
 import requests
 import subprocess
 import logging
-from base import Session, Role, User, drop_all
+from base import Session, Role, User, Watch, drop_all
 
 updater = Updater(os.environ['TELEGRAM_TOKEN'])
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 log = logging.getLogger(__name__)
 
 
+def broadcast_chats(func, *filters):
+    session = Session()
+    ids = set()
+    for watch in session.query(Watch).filter(Watch.filter.in_(filters)).all():
+        if watch.chat_id not in ids:
+            ids.add(watch.chat_id)
+            try:
+                func(session, watch.chat_id)
+            except Exception as e:
+                log.exception(e)
+
+
 class TgHandler(logging.Handler):
-    def __init__(self, chats, level):
-        self.chats = chats
+    def __init__(self, level):
         logging.Handler.__init__(self, level)
 
     def emit(self, entry):
-        # avoid hitting telegram limits
         message = self.format(entry)[-4096:]
-        for chat in enabled_logging:
+        def send(_, chat):
+            # avoid hitting telegram limits
             try:
                 updater.bot.send_message(chat, message)
             except Exception as e:
                 "to avoid loops"
                 print(str(e))
+        broadcast_chats(send, 'log')
 
 
-enabled_logging = set()
-logging.getLogger().addHandler(TgHandler(enabled_logging, logging.INFO))
+logging.getLogger().addHandler(TgHandler(logging.INFO))
 
 
 def command(command):
@@ -165,17 +176,23 @@ def snapshot(bot, update):
             update.message.reply_photo(photo=resp.raw, quote=True)
 
 
-@command('log')
+@command('watch')
 @check_role('admin')
 def toggle_logging(bot, update):
-    global enabled_logging
+    session = Session()
     chat_id = update.message.chat.id
-    action = update.message.text.split(' ', 1)[1]
-    if action == 'enable':
-        enabled_logging.add(chat_id)
-    elif action == 'disable':
-        if chat_id in enabled_logging:
-            enabled_logging.remove(chat_id)
+    tokens = update.message.text.split(' ', 2)
+    action = tokens[1]
+    filters_ = tokens[2:]
+    if action == 'add':
+        for filter_ in filters_:
+            session.add(Watch(filter=filter_, chat_id=chat_id))
+    elif action == 'rm':
+        session.query(Watch)\
+                .filter(Watch.chat_id == chat_id)\
+                .filter(Watch.filter.in_(filters_))\
+                .delete(synchronize_session='fetch')
+    session.commit()
 
 
 @command('acl_init')
