@@ -199,12 +199,13 @@ def toggle_logging(bot, update):
 @owner('ssmike')
 @replyerrors
 def clr_acl(bot, update):
+    watch_role = Role(name='watcher')
     admin_role = Role(name='admin')
     user_role = Role(name='user')
-    user = User(name='ssmike', id=update.message.from_user.id, roles=[admin_role, user_role])
+    user = User(name='ssmike', id=update.message.from_user.id, roles=[admin_role, watch_role, user_role])
 
     session = Session()
-    session.add_all([user_role, admin_role, user])
+    session.add_all([user_role, admin_role, watch_role, user])
     session.commit()
 
 
@@ -273,6 +274,7 @@ def del_roles(bot, update):
 
 
 @command('acl_list')
+@check_role('admin')
 def list_users(bot, update):
     name = update.message.text.split(' ')[1]
     session = Session()
