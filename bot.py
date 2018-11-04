@@ -16,7 +16,8 @@ class TgHandler(logging.Handler):
 
     def emit(self, entry):
         try:
-            updater.bot.send_message(self.chat_id, self.format(entry))
+            "avoid hitting telegram limits"
+            updater.bot.send_message(self.chat_id, self.format(entry)[-4096:])
         except Exception as e:
             "to awoid loops"
             print(str(e))
