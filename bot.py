@@ -286,12 +286,13 @@ def list_users(bot, update):
 def share(bot, update):
     url = update.message.text.split(' ')[1]
 
-    def reply_torrent(obj):
+    def reply_torrent(fname):
         update.message.reply_text(get_call_result('sky share {}'.format(fname)), quote=True)
 
     with requests.get(url, verify=False, stream=True) as resp:
         fname = uuid.uuid4().hex
-        shutil.copyfileobj(resp.raw, fname)
+        with open(fname, 'w') as fout:
+            shutil.copyfileobj(resp.raw, fout)
         reply_torrent(fname)
         os.remove(fname)
 
