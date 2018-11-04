@@ -177,7 +177,7 @@ def snapshot(bot, update):
 
 
 @command('watch')
-@check_role('admin')
+@check_role('user')
 def toggle_logging(bot, update):
     session = Session()
     chat_id = update.message.chat.id
