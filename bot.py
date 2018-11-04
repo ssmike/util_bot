@@ -96,14 +96,7 @@ def check_role(role_name):
     return guard(check, "you are not {}".format(role_name))
 
 
-def owner(user):
-    def pred(update):
-        return update.message.chat.type == 'private' and \
-               update.message.from_user.username == user
-    return guard(pred, "only {} has access to this handler".format(user))
-
-
-def owners(users):
+def owner(*users):
     def pred(update):
         return update.message.chat.type == 'private' and \
                update.message.from_user.username in users
