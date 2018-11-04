@@ -10,17 +10,23 @@ log = logging.getLogger(__name__)
 
 
 class TgHandler(logging.Handler):
-    def __init__(self, chat_id):
-        logging.Handler.__init__(self, logging.INFO)
-        self.chat_id = chat_id
+    def __init__(self, chats, level):
+        self.chats = chats
+        logging.Handler.__init__(self, level)
 
     def emit(self, entry):
-        try:
-            "avoid hitting telegram limits"
-            updater.bot.send_message(self.chat_id, self.format(entry)[-4096:])
-        except Exception as e:
-            "to awoid loops"
-            print(str(e))
+        # avoid hitting telegram limits
+        message = self.format(entry)[-4096:]
+        for chat in enabled_logging:
+            try:
+                updater.bot.send_message(chat, message)
+            except Exception as e:
+                "to awoid loops"
+                print(str(e))
+
+
+enabled_logging = set()
+logging.getLogger().addHandler(TgHandler(enabled_logging, logging.INFO))
 
 
 def command(command):
@@ -131,7 +137,8 @@ def snapshot(bot, update):
     }
     panel = update.message.text.split(' ', 1)
     if len(panel) == 1:
-        update.message.reply_text('available panels: ' + ' '.join(panels.keys()), quote=True)
+        update.message.reply_text('available panels: ' +
+                                  ' '.join(panels.keys()), quote=True)
         return
     panel = panel[1]
 
@@ -142,25 +149,17 @@ def snapshot(bot, update):
             update.message.reply_photo(photo=resp.raw, quote=True)
 
 
-handlers = {}
-
-
 @command('log')
 @owner('ssmike')
 def switch_reply_logging(bot, update):
-    "I know it is not thread safe"
-    global handlers
+    global enabled_logging
     chat_id = update.message.chat.id
     action = update.message.text.split(' ', 1)[1]
     if action == 'enable':
-        if chat_id not in handlers:
-            handler = TgHandler(chat_id)
-            handlers[chat_id] = handler
-            logging.getLogger().addHandler(handler)
+        enabled_logging.add(chat_id)
     elif action == 'disable':
-        if chat_id in handlers:
-            logging.getLogger().removeHandler(handlers[chat_id])
-            del handlers[chat_id]
+        if chat_id in enabled_logging:
+            enabled_logging.remove(chat_id)
 
 
 updater.start_polling()
