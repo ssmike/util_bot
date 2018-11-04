@@ -3,6 +3,8 @@ import os
 import requests
 import subprocess
 import logging
+import shutil
+import uuid
 from base import Session, Role, User, Watch, drop_all
 
 updater = Updater(os.environ['TELEGRAM_TOKEN'])
@@ -277,6 +279,21 @@ def list_users(bot, update):
         result.append(user.name)
     if len(result) != 0:
         update.message.reply_text("\n".join(result), quote=True)
+
+
+@command('share')
+@check_role('user')
+def share(bot, update):
+    url = update.message.text.split(' ')[1]
+
+    def reply_torrent(obj):
+        update.message.reply_text(get_call_result('sky share {}'.format(fname)), quote=True)
+
+    with requests.get(url, verify=False, stream=True) as resp:
+        fname = uuid.uuid4().hex
+        shutil.copyfile(resp.raw, fname)
+        reply_torrent(fname)
+        os.remove(fname)
 
 
 updater.start_polling()
