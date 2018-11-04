@@ -148,9 +148,9 @@ def set_loglevel(bot, update):
 @owner('ssmike')
 def switch_reply_logging(bot, update):
     if update.message.text.split(' ', 1) == 'enable':
-        log.addHandler(TgHandler(update.chat.id))
+        log.addHandler(TgHandler(update.message.chat.id))
     else:
-        log.removeHandler(TgHandler(update.chat.id))
+        log.removeHandler(TgHandler(update.message.chat.id))
 
 
 updater.start_polling()
