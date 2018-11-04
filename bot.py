@@ -151,12 +151,13 @@ def switch_reply_logging(bot, update):
     "I know it is not thread safe"
     global handlers
     chat_id = update.message.chat.id
-    if update.message.text.split(' ', 1)[1] == 'enable':
+    action = update.message.text.split(' ', 1)[1]
+    if action == 'enable':
         if chat_id not in handlers:
             handler = TgHandler(chat_id)
             handlers[chat_id] = handler
             logging.getLogger().addHandler(handler)
-    else:
+    elif action == 'disable':
         if chat_id in handlers:
             logging.getLogger().removeHandler(handlers[chat_id])
             del handlers[chat_id]
