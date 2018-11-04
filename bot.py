@@ -76,7 +76,7 @@ def owners(users):
 @command('dump')
 @owner('ssmike')
 def dump(bot, update):
-    update.message.reply_text("%s\n%s" % [bot, update])
+    update.message.reply_text("{}\n{}".format(bot, update))
 
 
 def get_call_result(command):
