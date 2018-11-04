@@ -21,7 +21,7 @@ class TgHandler(logging.Handler):
             try:
                 updater.bot.send_message(chat, message)
             except Exception as e:
-                "to awoid loops"
+                "to avoid loops"
                 print(str(e))
 
 
@@ -46,13 +46,15 @@ def replyerrors(func):
     return result
 
 
-def guard(predicate):
+def guard(predicate, message=None):
     def decorator(func):
         def handler(bot, update):
             chat = update.message.chat
             if predicate(chat):
                 func(bot, update)
             else:
+                if message is not None:
+                    update.message.reply_text(message, quote=True)
                 log.info('denied access for %s', chat)
         return handler
     return decorator
@@ -76,13 +78,13 @@ def retry(cnt):
 def owner(user):
     def pred(chat):
         return chat.type == 'private' and chat.username == user
-    return guard(pred)
+    return guard(pred, "only {} has access to this handler".format(user))
 
 
 def owners(users):
     def pred(chat):
         return chat.type == 'private' and chat.username in users
-    return guard(pred)
+    return guard(pred, "only {} have access to this handler".format(", ".join(users)))
 
 
 @command('dump')
