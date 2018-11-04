@@ -6,7 +6,7 @@ import logging
 from logging import warn, info, error, exception
 
 updater = Updater(os.environ['TELEGRAM_TOKEN'])
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
 
 def command(command):
@@ -123,6 +123,13 @@ def snapshot(bot, update):
     else:
         with requests.get(panels[panel], verify=False, stream=True) as resp:
             update.message.reply_photo(photo=resp.raw, quote=True)
+
+
+@command('log')
+@owner('ssmike')
+def set_loglevel(bot, update):
+    level = update.message.text.split(' ', 1)
+    info(level)
 
 
 updater.start_polling()
