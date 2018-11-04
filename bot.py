@@ -9,6 +9,14 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(level
 log = logging.getLogger(__name__)
 
 
+class TgHandler(logging.Handler):
+    def __init__(self, chat_id):
+        self.id = chat_id
+
+    def emit(self, entry):
+        updater.bot.send_message(self.id, self.format(entry))
+
+
 def command(command):
     def decorator(func):
         updater.dispatcher.add_handler(CommandHandler(command, func))
@@ -67,8 +75,8 @@ def owners(users):
 
 @command('dump')
 @owner('ssmike')
-def dump(bot, message):
-    log.info("%s\n%s", bot, message)
+def dump(bot, update):
+    update.message.reply_text("%s\n%s" % [bot, update])
 
 
 def get_call_result(command):
@@ -134,6 +142,15 @@ def set_loglevel(bot, update):
         'info': logging.INFO,
         'debug': logging.DEBUG,
         'error': logging.ERROR}[level])
+
+
+@command('log')
+@owner('ssmike')
+def switch_reply_logging(bot, update):
+    if update.message.text.split(' ', 1) == 'enable':
+        log.addHandler(TgHandler(update.chat.id))
+    else:
+        log.removeHandler(TgHandler(update.chat.id))
 
 
 updater.start_polling()
