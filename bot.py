@@ -18,7 +18,8 @@ class TgHandler(logging.Handler):
         try:
             updater.bot.send_message(self.chat_id, self.format(entry))
         except Exception as e:
-            log.exception(e)
+            "to awoid loops"
+            print(str(e))
 
 
 def command(command):
