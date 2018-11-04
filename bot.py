@@ -291,7 +291,7 @@ def share(bot, update):
 
     with requests.get(url, verify=False, stream=True) as resp:
         fname = uuid.uuid4().hex
-        shutil.copyfile(resp.raw, fname)
+        shutil.copyfileobj(resp.raw, fname)
         reply_torrent(fname)
         os.remove(fname)
 
