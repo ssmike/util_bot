@@ -15,7 +15,10 @@ class TgHandler(logging.Handler):
         self.chat_id = chat_id
 
     def emit(self, entry):
-        updater.bot.send_message(self.chat_id, self.format(entry))
+        try:
+            updater.bot.send_message(self.chat_id, self.format(entry))
+        except Exception as e:
+            log.exception(e)
 
 
 def command(command):
