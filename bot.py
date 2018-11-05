@@ -290,7 +290,7 @@ def share(bot, update):
 def add_url(bot, update):
     alias, url = update.message.text.split(' ', 2)[1:]
     session = Session()
-    user = session.query(User).filter(User.id == update.message.from_user.id)
+    user = session.query(User).filter(User.id == update.message.from_user.id).one()
     session.add(Bookmark(shortname=alias, url=url, user=user))
     session.commit()
 
