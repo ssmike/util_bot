@@ -143,6 +143,7 @@ def free(bot, update):
 @command('deploy')
 @owner('ssmike')
 def deploy(bot, update):
+    broadcast_chats(lambda _, chat: bot.send_message('deploying new version'), 'announces')
     for command in [['git', 'checkout', '-f'],
                     ['git', 'pull'],
                     ['pip', 'install', '-r', 'requirements.txt']]:
@@ -198,7 +199,9 @@ def clr_acl(bot, update):
 @check_role('admin')
 @replyerrors
 def drop_tables(bot, update):
-    drop(update.message.text.split(' ')[1:])
+    tables = update.message.text.split(' ')[1:]
+    broadcast_chats(lambda _, chat: bot.send_message('dropping {}'.format(tables)), 'announces')
+    drop(tables)
 
 
 @command('start')
