@@ -138,9 +138,9 @@ def free(bot, update):
 @command('deploy')
 @owner('ssmike')
 def deploy(bot, update):
-    for command in [['pip', 'install', '-r', 'requirements.txt'],
-                    ['git', 'checkout', '-f'],
-                    ['git', 'pull']]:
+    for command in [['git', 'checkout', '-f'],
+                    ['git', 'pull'],
+                    ['pip', 'install', '-r', 'requirements.txt']]:
         log.info("%s", command)
         subprocess.check_call(command)
     log.info("%s", ['python', 'bot.py'])
