@@ -5,7 +5,7 @@ import subprocess
 import logging
 import shutil
 import uuid
-from base import Session, Role, User, Watch, drop_all
+from base import Bookmark, Watch, Role, User, Session, drop_all
 from screenshot import make_screenshot
 
 updater = Updater(os.environ['TELEGRAM_TOKEN'])
@@ -152,31 +152,6 @@ def deploy(bot, update):
     os.execlp('python', 'python', 'bot.py')
 
 
-@command('yasm')
-@check_role('user')
-@replyerrors
-@retry(3)
-def snapshot(bot, update):
-    panels = {
-        'indexer': 'https://s.yasm.yandex-team.ru/panel/ssmike._GpjE3A/?range=86400000',
-        'cluster': 'https://s.yasm.yandex-team.ru/panel/ssmike._lKsvaf/',
-        'replicator': 'https://s.yasm.yandex-team.ru/panel/ssmike._mSIC52',
-        'knocker': 'https://s.yasm.yandex-team.ru/panel/ssmike._MDyCJy',
-    }
-    panel = update.message.text.split(' ', 1)
-    if len(panel) == 1:
-        update.message.reply_text('available panels: ' +
-                                  ' '.join(panels.keys()), quote=True)
-        return
-    panel = panel[1]
-
-    if panel not in panels:
-        update.message.reply_text('invalid panel')
-    else:
-        with requests.get(panels[panel], verify=False, stream=True) as resp:
-            update.message.reply_photo(photo=resp.raw, quote=True)
-
-
 @command('watch')
 @check_role('user')
 def toggle_logging(bot, update):
@@ -215,16 +190,6 @@ def clr_acl(bot, update):
 @replyerrors
 def ctl_clr(bot, update):
     drop_all()
-
-
-@command('add_role')
-@check_role('admin')
-def add_role(bot, update):
-    name = update.message.text.split(' ')[1]
-
-    session = Session()
-    session.add(Role(name=name))
-    session.commit()
 
 
 @command('start')
@@ -287,13 +252,14 @@ def list_users(bot, update):
         update.message.reply_text("\n".join(result), quote=True)
 
 
-def gen_fname(dir):
-    return os.path.join(dir, uuid.uuid4().hex)
+def gen_fname():
+    os.makedirs('downloads', exist_ok=True)
+    return os.path.join('downloads', uuid.uuid4().hex)
 
 
-def download(url, dir):
+def download(url):
     with requests.get(url, verify=False, stream=True) as resp:
-        fname = gen_fname(dir)
+        fname = gen_fname()
         with open(fname, 'wb') as fout:
             shutil.copyfileobj(resp.raw, fout)
         return fname
@@ -304,27 +270,45 @@ def download(url, dir):
 @replyerrors
 def share(bot, update):
     url = update.message.text.split(' ')[1]
-    dir = 'downloads'
-    if url == "@clear":
-        shutil.rmtree(dir)
-    else:
-        os.makedirs(dir, exist_ok=True)
-        fname = download(url, dir)
-        update.message.reply_text(get_call_result('sky share {}'.format(fname), quote=True))
+    fname = download(url, dir)
+    update.message.reply_text(get_call_result('sky share {}'.format(fname), quote=True))
+
+
+@command('bookmark')
+@check_role('user')
+def add_url(bot, update):
+    alias, url = update.message.text.split(' ', 2)[1:]
+    session = Session()
+    session.add(Bookmark(shortname=alias, url=url))
+    session.commit()
+
+
+@command('bdelete')
+@check_role('user')
+def rm_url(bot, update):
+    urls = update.message.text.split(' ')[1:]
+    session = Session()
+    session.query(Bookmark)\
+           .filter(Bookmark.shortname.in_(urls))\
+           .delete(synchronize_session='fetch')
+    session.commit()
 
 
 @command('fetch')
 @check_role('user')
 @replyerrors
 def send_doc(bot, update):
-    url = update.message.text.split(' ')[1]
-    dir = 'downloads'
-    fname = gen_fname(dir)
-    os.makedirs(dir, exist_ok=True)
-    make_screenshot(url, fname)
-    with open(fname, 'rb') as fin:
-        update.message.reply_document(fin, quote=True)
-    os.remove(fname)
+    args = update.message.text.split(' ', 1)
+    if len(args) < 2:
+        resp = "\n".join(b.url for b in Session().query(Bookmark).all())
+        update.message.reply_text(resp, quote=True)
+    else:
+        url = Session().query(Bookmark).filter(Bookmark.shortname == args[1]).one().url
+        fname = gen_fname()
+        make_screenshot(url, fname)
+        with open(fname, 'rb') as fin:
+            update.message.reply_document(fin, quote=True)
+        os.remove(fname)
 
 
 updater.start_polling()

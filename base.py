@@ -11,6 +11,12 @@ roles_association = Table('roles_association', Base.metadata,
 )
 
 
+class Bookmark(Base):
+    __tablename__ = 'urls'
+    shortname = Column(String, primary_key=True, unique=True)
+    url = Column(String)
+
+
 class Watch(Base):
     __tablename__ = 'watch'
     id = Column(Integer, primary_key=True, unique=True)
