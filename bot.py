@@ -290,7 +290,8 @@ def share(bot, update):
 def add_url(bot, update):
     alias, url = update.message.text.split(' ', 2)[1:]
     session = Session()
-    session.add(Bookmark(shortname=alias, url=url))
+    user = session.query(User).filter(User.user_id == update.message.from_user.id)
+    session.add(Bookmark(shortname=alias, url=url, user=user))
     session.commit()
 
 
@@ -300,6 +301,7 @@ def rm_url(bot, update):
     urls = update.message.text.split(' ')[1:]
     session = Session()
     session.query(Bookmark)\
+           .filter(Bookmark.user_id == update.message.from_user.id)\
            .filter(Bookmark.shortname.in_(urls))\
            .delete(synchronize_session='fetch')
     session.commit()
@@ -311,14 +313,17 @@ def rm_url(bot, update):
 @replyerrors
 def send_doc(bot, update):
     args = update.message.text.split(' ', 3)
+    user_id = update.message.from_user.id
     if len(args) < 2:
-        resp = "\n".join("%s: %s" % (b.shortname, b.url) for b in Session().query(Bookmark).all())
+        resp = "\n".join("%s: %s" % (b.shortname, b.url) for b in Session().query(Bookmark).filter(Bookmark.user_id == user_id).all())
         update.message.reply_text(resp, quote=True)
     else:
         explicit_sleep = None
         if len(args) >= 3:
             explicit_sleep = int(args[1])
-        url = Session().query(Bookmark).filter(Bookmark.shortname == args[-1]).one().url
+        url = Session().query(Bookmark)\
+                .filter(Bookmark.user_id == user_id)\
+                .filter(Bookmark.shortname == args[-1]).one().url
         fname = gen_fname()
         make_screenshot(url, fname, explicit_sleep)
         with open(fname, 'rb') as fin:

@@ -13,8 +13,10 @@ roles_association = Table('roles_association', Base.metadata,
 
 class Bookmark(Base):
     __tablename__ = 'urls'
-    shortname = Column(String, primary_key=True, unique=True)
+    id = Column(Integer, primary_key=True, unique=True)
+    shortname = Column(String)
     url = Column(String)
+    user_id = Column(Integer, ForeignKey('users.id'))
 
 
 class Watch(Base):
@@ -37,6 +39,8 @@ class User(Base):
 
 User.roles = relationship(Role, secondary=roles_association)
 Role.users = relationship(User, secondary=roles_association)
+Bookmark.user = relationship(User, uselist=False)
+User.bookmarks = relationship(Bookmark)
 
 engine = create_engine('sqlite:///chats.db', connect_args={'check_same_thread': False})
 Base.metadata.create_all(engine)
