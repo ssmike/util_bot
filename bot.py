@@ -298,7 +298,17 @@ def share(bot, update):
     if url == "@clear":
         shutil.rmtree(dir)
     else:
-        update.message.reply_text(get_call_result('sky share {}'.format(download(url, dir)), quote=True))
+        fname = download(url, dir)
+        update.message.reply_text(get_call_result('sky share {}'.format(fname), quote=True))
+
+
+@command('fetch')
+@check_role('user')
+@replyerrors
+def send_doc(bot, update):
+    url = update.message.text.split(' ')[1]
+    with requests.get(url, verify=False, stream=True) as resp:
+        update.message.reply_document(resp.raw, quote=True)
 
 
 updater.start_polling()
