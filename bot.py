@@ -280,15 +280,6 @@ def download(url):
         return fname
 
 
-@command('share')
-@check_role('user')
-@replyerrors
-def share(bot, update):
-    url = update.message.text.split(' ')[1]
-    fname = download(url, dir)
-    update.message.reply_text(get_call_result('sky share {}'.format(fname), quote=True))
-
-
 @command('bookmark')
 @check_role('user')
 def add_url(bot, update):
