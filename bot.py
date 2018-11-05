@@ -281,20 +281,24 @@ def list_users(bot, update):
         update.message.reply_text("\n".join(result), quote=True)
 
 
-@command('share')
-@check_role('user')
-def share(bot, update):
-    url = update.message.text.split(' ')[1]
-
-    def reply_torrent(fname):
-        update.message.reply_text(get_call_result('sky share {}'.format(fname)), quote=True)
-
+def download(url, dir):
     with requests.get(url, verify=False, stream=True) as resp:
-        fname = uuid.uuid4().hex
+        fname = os.path.join(dir, uuid.uuid4().hex)
         with open(fname, 'wb') as fout:
             shutil.copyfileobj(resp.raw, fout)
-        reply_torrent(fname)
-        os.remove(fname)
+        return fname
+
+
+@command('share')
+@check_role('user')
+@replyerrors
+def share(bot, update):
+    url = update.message.text.split(' ')[1]
+    dir = 'downloads'
+    if url == "@clear":
+        shutil.rmtree(dir)
+    else:
+        update.message.reply_text(get_call_result('sky share {}'.format(download(url, dir)), quote=True))
 
 
 updater.start_polling()
