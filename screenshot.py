@@ -10,6 +10,7 @@ def make_screenshot(url, fname):
     browser = Chrome(chrome_options=options)
     browser.get(url)
     browser.save_screenshot(fname)
+    browser.close()
 
 
 if __name__ == '__main__':
