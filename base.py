@@ -48,3 +48,7 @@ Session = sessionmaker(bind=engine)
 def drop_all():
     Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
+
+def drop(tables):
+    for name in tables:
+        Base.metadata.tables[name].drop()

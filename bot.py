@@ -5,7 +5,7 @@ import subprocess
 import logging
 import shutil
 import uuid
-from base import Bookmark, Watch, Role, User, Session, drop_all
+from base import Bookmark, Watch, Role, User, Session, drop
 from screenshot import make_screenshot
 
 updater = Updater(os.environ['TELEGRAM_TOKEN'], workers=8)
@@ -194,11 +194,11 @@ def clr_acl(bot, update):
     session.commit()
 
 
-@command('acl_clear')
-@owner('ssmike')
+@command('drop')
+@check_role('admin')
 @replyerrors
-def ctl_clr(bot, update):
-    drop_all()
+def drop_tables(bot, update):
+    drop(update.message.text.split(' ')[1:])
 
 
 @command('start')
