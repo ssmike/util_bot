@@ -40,7 +40,7 @@ class User(Base):
 User.roles = relationship(Role, secondary=roles_association)
 Role.users = relationship(User, secondary=roles_association)
 Bookmark.user = relationship(User, uselist=False)
-User.bookmarks = relationship(Bookmark)
+User.bookmarks = relationship(Bookmark, backref='user_id')
 
 engine = create_engine('sqlite:///chats.db', connect_args={'check_same_thread': False})
 Base.metadata.create_all(engine)
