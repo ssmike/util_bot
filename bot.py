@@ -171,6 +171,15 @@ def toggle_logging(bot, update):
     session.commit()
 
 
+@command('new_role')
+@check_role('admin')
+def add_role(bot, update):
+    role = update.message.text.split(' ', 1)[1]
+    session = Session()
+    session.add(Role(name=role))
+    session.commit()
+
+
 @command('acl_init')
 @owner('ssmike')
 @replyerrors
@@ -215,6 +224,7 @@ def parse_role_users(text):
 
 @command('acl_add')
 @check_role('admin')
+@replyerrors
 def add_roles(bot, update):
     session = Session()
     text = update.message.text
@@ -228,6 +238,7 @@ def add_roles(bot, update):
 
 @command('acl_rm')
 @check_role('admin')
+@replyerrors
 def del_roles(bot, update):
     session = Session()
     text = update.message.text
