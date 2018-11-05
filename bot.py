@@ -300,7 +300,7 @@ def rm_url(bot, update):
 def send_doc(bot, update):
     args = update.message.text.split(' ', 1)
     if len(args) < 2:
-        resp = "\n".join(b.url for b in Session().query(Bookmark).all())
+        resp = "\n".join("%s: %s" % (b.shortname, b.url) for b in Session().query(Bookmark).all())
         update.message.reply_text(resp, quote=True)
     else:
         url = Session().query(Bookmark).filter(Bookmark.shortname == args[1]).one().url
