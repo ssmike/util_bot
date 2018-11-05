@@ -5,35 +5,14 @@ import subprocess
 import logging
 import shutil
 import uuid
-from base import Bookmark, Watch, Role, User, Session, drop
+from base import Bookmark, Watch, Role, User, drop, make_session, with_session
 from screenshot import make_screenshot
-from contextlib import contextmanager
 
 updater = Updater(os.environ['TELEGRAM_TOKEN'], workers=8)
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 log = logging.getLogger(__name__)
 
 
-@contextmanager
-def make_session():
-    session = Session()
-    try:
-        yield session
-    except:
-        session.rollback()
-        raise
-    finally:
-        session.close()
-
-
-def with_session(func):
-    def result(*args, **kwargs):
-        with make_session() as session:
-            return func(session, *args, **kwargs)
-    return result
-
-
-@with_session
 def broadcast_chats(session, func, *filters):
     ids = set()
     for watch in session.query(Watch).filter(Watch.filter.in_(filters)).all():
@@ -58,7 +37,7 @@ class TgHandler(logging.Handler):
             except Exception as e:
                 "to avoid loops"
                 print(str(e))
-        broadcast_chats(send, 'log')
+        with_session(broadcast_chats)(send, 'log')
 
 
 logging.getLogger().addHandler(TgHandler(logging.INFO))
@@ -164,7 +143,7 @@ def free(bot, update):
 @command('deploy')
 @owner('ssmike')
 def deploy(bot, update):
-    broadcast_chats(lambda _, chat: bot.send_message(chat, 'deploying new version'), 'announces')
+    with_session(broadcast_chats)(lambda _, chat: bot.send_message(chat, 'deploying new version'), 'announces')
     for command in [['git', 'checkout', '-f'],
                     ['git', 'pull'],
                     ['pip', 'install', '-r', 'requirements.txt']]:
@@ -217,7 +196,7 @@ def clr_acl(session, bot, update):
 @replyerrors
 def drop_tables(bot, update):
     tables = update.message.text.split(' ')[1:]
-    broadcast_chats(lambda _, chat: bot.send_message(chat, 'dropping {}'.format(tables)), 'announces')
+    with_session(broadcast_chats)(lambda _, chat: bot.send_message(chat, 'dropping {}'.format(tables)), 'announces')
     drop(tables)
 
 
