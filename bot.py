@@ -1,4 +1,4 @@
-from telegram.ext import Updater, CommandHandler
+from telegram.ext import Updater, CommandHandler, run_async
 import os
 import requests
 import subprocess
@@ -8,7 +8,7 @@ import uuid
 from base import Bookmark, Watch, Role, User, Session, drop_all
 from screenshot import make_screenshot
 
-updater = Updater(os.environ['TELEGRAM_TOKEN'])
+updater = Updater(os.environ['TELEGRAM_TOKEN'], workers=8)
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 log = logging.getLogger(__name__)
 
@@ -297,6 +297,7 @@ def rm_url(bot, update):
 @command('fetch')
 @check_role('user')
 @replyerrors
+@run_async
 def send_doc(bot, update):
     args = update.message.text.split(' ', 1)
     if len(args) < 2:
