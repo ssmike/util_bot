@@ -307,8 +307,8 @@ def rm_url(bot, update):
 
 @command('fetch')
 @check_role('user')
-@replyerrors
 @run_async
+@replyerrors
 def send_doc(bot, update):
     args = update.message.text.split(' ', 3)
     if len(args) < 2:
@@ -318,7 +318,7 @@ def send_doc(bot, update):
         explicit_sleep = None
         if len(args) >= 3:
             explicit_sleep = args[1]
-        url = Session().query(Bookmark).filter(Bookmark.shortname == args[1]).one().url
+        url = Session().query(Bookmark).filter(Bookmark.shortname == args[-1]).one().url
         fname = gen_fname()
         make_screenshot(url, fname)
         with open(fname, 'rb') as fin:
