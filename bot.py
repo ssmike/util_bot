@@ -210,6 +210,7 @@ def add_user(bot, update):
         user = update.message.from_user
         session = Session()
         session.add(User(name=user.username, id=user.id))
+        session.add(Watch(filter='announces', chat_id=update.message.chat))
         session.commit()
     except Exception:
         return
