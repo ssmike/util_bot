@@ -6,6 +6,7 @@ import logging
 import shutil
 import uuid
 from base import Session, Role, User, Watch, drop_all
+from screenshot import make_screenshot
 
 updater = Updater(os.environ['TELEGRAM_TOKEN'])
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -281,9 +282,13 @@ def list_users(bot, update):
         update.message.reply_text("\n".join(result), quote=True)
 
 
+def gen_fname(dir):
+    return os.path.join(dir, uuid.uuid4().hex)
+
+
 def download(url, dir):
     with requests.get(url, verify=False, stream=True) as resp:
-        fname = os.path.join(dir, uuid.uuid4().hex)
+        fname = gen_fname(dir)
         with open(fname, 'wb') as fout:
             shutil.copyfileobj(resp.raw, fout)
         return fname
@@ -298,6 +303,7 @@ def share(bot, update):
     if url == "@clear":
         shutil.rmtree(dir)
     else:
+        os.makedirs(dir, exist_ok=True)
         fname = download(url, dir)
         update.message.reply_text(get_call_result('sky share {}'.format(fname), quote=True))
 
@@ -307,8 +313,12 @@ def share(bot, update):
 @replyerrors
 def send_doc(bot, update):
     url = update.message.text.split(' ')[1]
-    with requests.get(url, verify=False, stream=True) as resp:
-        update.message.reply_document(resp.raw, quote=True)
+    fname = gen_fname('downloads')
+    os.makedirs(dir, exist_ok=True)
+    make_screenshot(url, fname)
+    with open(fname) as fin:
+        update.message.reply_document(fin, quote=True)
+    os.remove(fname)
 
 
 updater.start_polling()
