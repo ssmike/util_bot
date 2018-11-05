@@ -91,11 +91,11 @@ def retry(cnt):
 
 def check_role(role_name):
     def check(update):
-        user = Session().query(User).filter(User.id==update.message.from_user.id).one()
-        for role in user.roles:
-            if role.name == role_name:
-                return True
-        return False
+        return Session().query(User)\
+                .filter(User.id == update.message.from_user.id)\
+                .join(User.roles)\
+                .filter(Role.name == role_name)\
+                .first()
     return guard(check, "you are not {}".format(role_name))
 
 

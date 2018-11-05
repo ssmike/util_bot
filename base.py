@@ -17,6 +17,7 @@ class Bookmark(Base):
     shortname = Column(String)
     url = Column(String)
     user_id = Column(Integer, ForeignKey('users.id'))
+    user = relationship("User", uselist=False, back_populates='bookmarks')
 
 
 class Watch(Base):
@@ -35,12 +36,9 @@ class User(Base):
     __tablename__ = 'users'
     id = Column(Integer, primary_key=True, unique=True)
     name = Column(String)
+    roles = relationship(Role, secondary=roles_association, backref='users')
+    bookmarks = relationship(Bookmark, back_populates='user')
 
-
-User.roles = relationship(Role, secondary=roles_association)
-Role.users = relationship(User, secondary=roles_association)
-Bookmark.user = relationship(User, uselist=False)
-User.bookmarks = relationship(Bookmark, backref='bookmark')
 
 engine = create_engine('sqlite:///chats.db', connect_args={'check_same_thread': False})
 Base.metadata.create_all(engine)
