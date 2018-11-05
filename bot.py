@@ -313,7 +313,8 @@ def share(bot, update):
 @replyerrors
 def send_doc(bot, update):
     url = update.message.text.split(' ')[1]
-    fname = gen_fname('downloads')
+    dir = 'downloads'
+    fname = gen_fname(dir)
     os.makedirs(dir, exist_ok=True)
     make_screenshot(url, fname)
     with open(fname) as fin:
