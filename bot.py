@@ -314,14 +314,16 @@ def rm_url(bot, update):
 def send_doc(bot, update):
     args = update.message.text.split(' ', 3)
     user_id = update.message.from_user.id
+    session = Session()
+    user = session.query(User).filter(User.id == update.message.from_user.id)
     if len(args) < 2:
-        resp = "\n".join("%s: %s" % (b.shortname, b.url) for b in Session().query(Bookmark).filter(Bookmark.user_id == user_id).all())
+        resp = "\n".join("%s: %s" % (b.shortname, b.url) for b in user.bookmarks)
         update.message.reply_text(resp, quote=True)
     else:
         explicit_sleep = None
         if len(args) >= 3:
             explicit_sleep = int(args[1])
-        url = Session().query(Bookmark)\
+        url = session.query(Bookmark)\
                 .filter(Bookmark.user_id == user_id)\
                 .filter(Bookmark.shortname == args[-1]).one().url
         fname = gen_fname()
