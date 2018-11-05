@@ -317,7 +317,7 @@ def send_doc(bot, update):
     fname = gen_fname(dir)
     os.makedirs(dir, exist_ok=True)
     make_screenshot(url, fname)
-    with open(fname) as fin:
+    with open(fname, 'rb') as fin:
         update.message.reply_document(fin, quote=True)
     os.remove(fname)
 
