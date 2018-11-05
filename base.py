@@ -1,7 +1,8 @@
-from sqlalchemy import Column, ForeignKey, Integer, String, Boolean, Table
+from sqlalchemy import Column, ForeignKey, Integer, String, Table
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker
 from sqlalchemy import create_engine
+from contextlib import contextmanager
 
 Base = declarative_base()
 
@@ -54,3 +55,22 @@ def drop_all():
 def drop(tables):
     for name in tables:
         Base.metadata.tables[name].drop()
+
+
+@contextmanager
+def make_session():
+    session = Session()
+    try:
+        yield session
+    except:
+        session.rollback()
+        raise
+    finally:
+        session.close()
+
+
+def with_session(func):
+    def result(*args, **kwargs):
+        with make_session() as session:
+            return func(session, *args, **kwargs)
+    return result
