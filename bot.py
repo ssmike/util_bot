@@ -106,6 +106,11 @@ def owner(*users):
     return guard(pred, "only {} have access to this handler".format(", ".join(users)))
 
 
+@command('ping')
+def ping(bot, update):
+    update.message.reply_text('pong')
+
+
 @command('dump')
 @owner('ssmike')
 def dump(bot, update):
