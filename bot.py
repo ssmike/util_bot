@@ -320,7 +320,7 @@ def send_doc(bot, update):
             explicit_sleep = args[1]
         url = Session().query(Bookmark).filter(Bookmark.shortname == args[-1]).one().url
         fname = gen_fname()
-        make_screenshot(url, fname)
+        make_screenshot(url, fname, explicit_sleep)
         with open(fname, 'rb') as fin:
             update.message.reply_document(fin, quote=True)
         os.remove(fname)
