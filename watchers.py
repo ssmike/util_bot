@@ -2,8 +2,6 @@ from threading import Thread
 import time
 import psutil
 from getpass import getuser as currentuser
-from bot import broadcast_chats, updater
-from base import make_session
 
 
 def check_memory():
@@ -35,7 +33,7 @@ def check_users():
 watchers = [check_memory, iter(check_users()).__next__]
 
 
-def run(sleep=1):
+def run(broadcaster, sleep=1):
     def target():
         while True:
             result = {}
@@ -44,10 +42,7 @@ def run(sleep=1):
                 if res:
                     result.__additem__(*w)
 
-            with make_session() as s:
-                for filter, message in result:
-                    broadcast_chats(s, lambda _, id: updater.bot.send_message(id, message), filter)
-
+            broadcaster(result)
             time.sleep(sleep)
 
     Thread(target=target()).start()
