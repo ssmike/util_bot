@@ -7,6 +7,7 @@ import shutil
 import uuid
 from base import Bookmark, Watch, Role, User, drop, make_session, with_session
 from screenshot import make_screenshot
+import watchers
 
 updater = Updater(os.environ['TELEGRAM_TOKEN'], workers=8)
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -321,4 +322,6 @@ def send_doc(bot, update):
 
 
 updater.start_polling()
+watchers.run(os.getenv('PERIODIC_SLEEP', 60))
+
 updater.idle()
