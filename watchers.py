@@ -11,7 +11,7 @@ def check_memory():
     av = mem.available / 2 ** 30
     total = mem.total / 2 ** 30
 
-    if total > av * 30:
+    if total > av * 20:
         return 'alerts', 'critical memory usage {:.2f}/{:.2f}'.format(total - av, total)
 
 
