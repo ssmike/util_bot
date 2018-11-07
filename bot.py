@@ -79,6 +79,8 @@ def toggle_logging(session, bot, update):
                 .filter(Watch.chat_id == chat_id)\
                 .filter(Watch.filter.in_(filters_))\
                 .delete(synchronize_session='fetch')
+    elif action == 'list':
+        update.message.reply('\n'.join(watch.filter for watch in session.query(Watch).filter(Watch.chat_id == chat_id)))
 
 
 @command('drop')
@@ -115,20 +117,17 @@ def download(url):
 @check_role('user')
 @with_session
 def add_url(session, bot, update):
-    alias, url = update.message.text.split(' ', 2)[1:]
-    user = session.query(User).filter(User.id == update.message.from_user.id).one()
-    session.add(Bookmark(shortname=alias, url=url, user=user))
-
-
-@command('bdelete')
-@check_role('user')
-@with_session
-def rm_url(session, bot, update):
-    urls = update.message.text.split(' ')[1:]
-    session.query(Bookmark)\
-           .filter(Bookmark.user_id == update.message.from_user.id)\
-           .filter(Bookmark.shortname.in_(urls))\
-           .delete(synchronize_session='fetch')
+    cmd, data = update.message.text.split(' ', 2)[1:]
+    if cmd == 'add':
+        alias, url = data.split(' ', 1)
+        user = session.query(User).filter(User.id == update.message.from_user.id).one()
+        session.add(Bookmark(shortname=alias, url=url, user=user))
+    elif cmd == 'rm':
+        urls = data.split(' ')
+        session.query(Bookmark)\
+               .filter(Bookmark.user_id == update.message.from_user.id)\
+               .filter(Bookmark.shortname.in_(urls))\
+               .delete(synchronize_session='fetch')
 
 
 @command('fetch')
