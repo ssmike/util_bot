@@ -168,4 +168,6 @@ def notifier(kw):
 
 updater.start_polling()
 watchers.run(notifier, os.getenv('PERIODIC_SLEEP', 60))
+
+log.info("started")
 updater.idle()
