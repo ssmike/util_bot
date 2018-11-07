@@ -37,6 +37,7 @@ def get_call_result(command):
 
 @command('shell')
 @check_role('admin')
+@run_async
 @replyerrors
 def shell(bot, update):
     command = update.message.text.split(' ', 1)[1]
