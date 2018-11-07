@@ -159,6 +159,7 @@ def send_doc(bot, update):
             update.message.reply_document(fin, quote=True)
         os.remove(fname)
 
+
 def notifier(kw):
     with make_session() as s:
         for filter, message in kw:

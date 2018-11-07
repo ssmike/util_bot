@@ -42,7 +42,7 @@ def run(broadcaster, sleep=1):
                 try:
                     res = w()
                     if res:
-                        result.__additem__(*w)
+                        result.__setitem__(*w)
                 except Exception as e:
                     logging.getLogger(__name__).exception(e)
 
