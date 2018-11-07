@@ -1,4 +1,4 @@
-from telegram.ext import Updater, CommandHandler, run_async
+from telegram.ext import run_async
 import os
 import requests
 import subprocess
@@ -8,103 +8,11 @@ import uuid
 from base import Bookmark, Watch, Role, User, drop, make_session, with_session
 from screenshot import make_screenshot
 import watchers
+from tgutil import updater, broadcast_chats, TgHandler, command, guard, retry, replyerrors, check_role, owner
+import acl
 
-updater = Updater(os.environ['TELEGRAM_TOKEN'], workers=8)
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 log = logging.getLogger(__name__)
-
-
-def broadcast_chats(session, func, *filters):
-    ids = set()
-    for watch in session.query(Watch).filter(Watch.filter.in_(filters)).all():
-        if watch.chat_id not in ids:
-            ids.add(watch.chat_id)
-            try:
-                func(session, watch.chat_id)
-            except Exception as e:
-                log.exception(e)
-
-
-class TgHandler(logging.Handler):
-    def __init__(self, level):
-        logging.Handler.__init__(self, level)
-
-    def emit(self, entry):
-        message = self.format(entry)[-4096:]
-        def send(_, chat):
-            # avoid hitting telegram limits
-            try:
-                updater.bot.send_message(chat, message)
-            except Exception as e:
-                "to avoid loops"
-                print(str(e))
-        with_session(broadcast_chats)(send, 'log')
-
-
 logging.getLogger().addHandler(TgHandler(logging.INFO))
-
-
-def command(command):
-    def decorator(func):
-        updater.dispatcher.add_handler(CommandHandler(command, func))
-        return func
-    return decorator
-
-
-def replyerrors(func):
-    def result(bot, update):
-        try:
-            func(bot, update)
-        except Exception as e:
-            update.message.reply_text('error: ' + str(e), quote=True)
-            raise e
-    return result
-
-
-def guard(predicate, message=None):
-    def decorator(func):
-        def handler(bot, update):
-            if predicate(update):
-                func(bot, update)
-            else:
-                if message is not None:
-                    update.message.reply_text(message, quote=True)
-                log.info('denied access for %s', update.message.chat)
-        return handler
-    return decorator
-
-
-def retry(cnt):
-    def decorator(func):
-        def handler(bot, update):
-            for i in range(cnt):
-                try:
-                    func(bot, update)
-                    break
-                except Exception as e:
-                    log.exception(e)
-                    if i == (cnt - 1):
-                        raise e
-        return handler
-    return decorator
-
-
-def check_role(role_name):
-    @with_session
-    def check(session, update):
-        return session.query(User)\
-                .filter(User.id == update.message.from_user.id)\
-                .join(User.roles)\
-                .filter(Role.name == role_name)\
-                .first()
-    return guard(check, "you are not {}".format(role_name))
-
-
-def owner(*users):
-    def pred(update):
-        return update.message.chat.type == 'private' and \
-               update.message.from_user.username in users
-    return guard(pred, "only {} have access to this handler".format(", ".join(users)))
 
 
 @command('ping')
@@ -172,26 +80,6 @@ def toggle_logging(session, bot, update):
                 .delete(synchronize_session='fetch')
 
 
-@command('new_role')
-@check_role('admin')
-@with_session
-def add_role(session, bot, update):
-    role = update.message.text.split(' ', 1)[1]
-    session.add(Role(name=role))
-
-
-@command('acl_init')
-@owner('ssmike')
-@replyerrors
-@with_session
-def clr_acl(session, bot, update):
-    watch_role = Role(name='watcher')
-    admin_role = Role(name='admin')
-    user_role = Role(name='user')
-    user = User(name='ssmike', id=update.message.from_user.id, roles=[admin_role, watch_role, user_role])
-    session.add_all([user_role, admin_role, watch_role, user])
-
-
 @command('drop')
 @check_role('admin')
 @replyerrors
@@ -207,55 +95,6 @@ def add_user(session, bot, update):
     user = update.message.from_user
     session.add(User(name=user.username, id=user.id))
     session.add(Watch(filter='announces', chat_id=update.message.chat))
-
-
-def parse_role_users(text):
-    names, role_names = [], []
-    for token in text.split(' ')[1:]:
-        if token.startswith('@'):
-            names.append(token[1:])
-        else:
-            role_names.append(token)
-    return names, role_names
-
-
-@command('acl_add')
-@check_role('admin')
-@replyerrors
-@with_session
-def add_roles(session, bot, update):
-    text = update.message.text
-    names, role_names = parse_role_users(text)
-    for user, role in session.query(User, Role) \
-                             .filter(Role.name.in_(role_names)) \
-                             .filter(User.name.in_(names)).all():
-        user.roles.append(role)
-
-
-@command('acl_rm')
-@check_role('admin')
-@replyerrors
-@with_session
-def del_roles(session, bot, update):
-    text = update.message.text
-    names, role_names = parse_role_users(text)
-    for user, role in session.query(User, Role) \
-                             .filter(Role.name.in_(role_names)) \
-                             .filter(User.name.in_(names)).all():
-        user.roles.remove(role)
-
-
-@command('acl_list')
-@check_role('admin')
-@with_session
-def list_users(session, bot, update):
-    name = update.message.text.split(' ')[1]
-    role = session.query(Role).filter(Role.name == name).one()
-    result = []
-    for user in role.users:
-        result.append(user.name)
-    if len(result) != 0:
-        update.message.reply_text("\n".join(result), quote=True)
 
 
 def gen_fname():
@@ -319,7 +158,6 @@ def send_doc(bot, update):
         with open(fname, 'rb') as fin:
             update.message.reply_document(fin, quote=True)
         os.remove(fname)
-
 
 def notifier(kw):
     with make_session() as s:
