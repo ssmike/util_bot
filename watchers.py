@@ -2,6 +2,7 @@ from threading import Thread
 import time
 import psutil
 from getpass import getuser as currentuser
+import logging
 
 
 def check_memory():
@@ -38,9 +39,13 @@ def run(broadcaster, sleep=1):
         while True:
             result = {}
             for w in watchers:
-                res = w()
-                if res:
-                    result.__additem__(*w)
+                try:
+                    res = w()
+                    if res:
+                        result.__additem__(*w)
+                except Exception as e:
+                    logging.getLogger(__name__).exception(e)
+
 
             broadcaster(result)
             time.sleep(sleep)
