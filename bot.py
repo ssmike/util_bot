@@ -65,6 +65,7 @@ def deploy(bot, update):
 
 @command('watch')
 @check_role('watcher')
+@replyerrors
 @with_session
 def toggle_logging(session, bot, update):
     chat_id = update.message.chat.id
