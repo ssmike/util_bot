@@ -80,7 +80,7 @@ def toggle_logging(session, bot, update):
                 .filter(Watch.filter.in_(filters_))\
                 .delete(synchronize_session='fetch')
     elif action == 'list':
-        update.message.reply('\n'.join(watch.filter for watch in session.query(Watch).filter(Watch.chat_id == chat_id)))
+        update.message.reply_text('\n'.join(watch.filter for watch in session.query(Watch).filter(Watch.chat_id == chat_id)))
 
 
 @command('drop')
