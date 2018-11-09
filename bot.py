@@ -69,6 +69,8 @@ def deploy(bot, update):
 def toggle_logging(session, bot, update):
     chat_id = update.message.chat.id
     tokens = update.message.text.split(' ', 2)
+    if len(tokens) < 2:
+        return
     action = tokens[1]
     filters_ = tokens[2:]
     if action == 'add':
