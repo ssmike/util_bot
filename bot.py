@@ -153,7 +153,7 @@ def send_doc(bot, update):
                          .filter(Bookmark.user_id == user_id)\
                          .filter(Bookmark.shortname == args[-1])\
                          .one().url
-            fname = gen_fname()
+            fname = gen_fname() + ".png"
 
     if fname:
         make_screenshot(url, fname, explicit_sleep)

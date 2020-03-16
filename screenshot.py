@@ -4,7 +4,7 @@ import time
 
 options = Options()
 options.add_argument('--headless')
-options.add_argument('--window-size=1920,1080')
+options.add_argument('--window-size=1920,3080')
 
 
 def make_screenshot(url, fname, sleep=None):
