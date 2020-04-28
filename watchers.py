@@ -11,6 +11,7 @@ def check_temp(tag, crit):
         num = int(open('/sys/class/thermal/thermal_zone0/temp').read()) / 1000
         if num > crit:
             return tag, "acpi temperature %.1f'C" % (num,)
+    return func
 
 
 def check_memory():
