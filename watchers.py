@@ -3,7 +3,7 @@ import time
 import psutil
 from getpass import getuser as currentuser
 import logging
-
+import subprocess
 
 def check_memory():
     mem = psutil.virtual_memory()

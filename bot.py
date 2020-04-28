@@ -161,15 +161,15 @@ def send_doc(bot, update):
             update.message.reply_document(fin, quote=True)
         os.remove(fname)
 
-
 def notifier(kw):
     with make_session() as s:
-        for filter, message in kw:
+        for filter, message in kw.items():
+            print('broadcasting', 'message')
             broadcast_chats(s, lambda _, id: updater.bot.send_message(id, message), filter)
 
 
 updater.start_polling()
-watchers.run(notifier, os.getenv('PERIODIC_SLEEP', 60))
+watchers.run(notifier, int(os.getenv('PERIODIC_SLEEP', 60)))
 
 log.info("started")
 updater.idle()
