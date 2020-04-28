@@ -119,7 +119,7 @@ def download(url):
 
 
 @command('bookmark')
-@check_role('user')
+@check_role('trusted')
 @with_session
 def add_url(session, bot, update):
     cmd, data = update.message.text.split(' ', 2)[1:]
@@ -136,7 +136,7 @@ def add_url(session, bot, update):
 
 
 @command('fetch')
-@check_role('user')
+@check_role('trusted')
 @run_async
 @replyerrors
 def send_doc(bot, update):
