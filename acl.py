@@ -23,13 +23,15 @@ def add_role(session, bot, update):
 @command('acl_init')
 @owner('ssmike')
 @replyerrors
-@with_session
-def clr_acl(session, bot, update):
-    watch_role = Role(name='watcher')
-    admin_role = Role(name='admin')
-    user_role = Role(name='user')
-    user = User(name='ssmike', id=update.message.from_user.id, roles=[admin_role, watch_role, user_role])
-    session.add_all([user_role, admin_role, watch_role, user])
+def clr_acl(bot, update):
+    with make_session() as session:
+        watch_role = Role(name='watcher')
+        admin_role = Role(name='admin')
+        user_role = Role(name='user')
+        session.add_all([user_role, admin_role, watch_role])
+    with make_session() as session:
+        user = User(name='ssmike', id=update.message.from_user.id, roles=[admin_role, watch_role, user_role])
+        session.add(user)
 
 
 @command('acl_add')
