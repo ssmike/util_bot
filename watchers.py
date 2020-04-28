@@ -40,7 +40,7 @@ def check_users():
             yield None
 
 
-watchers = [check_memory, iter(check_users()).__next__, check_temp('alerts', 72), check_temp('temp', 0)]
+watchers = [check_memory, iter(check_users()).__next__, check_temp('alerts', 74), check_temp('temp', 0)]
 
 
 def run(broadcaster, sleep=1):
