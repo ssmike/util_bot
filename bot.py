@@ -164,7 +164,6 @@ def send_doc(bot, update):
 def notifier(kw):
     with make_session() as s:
         for filter, message in kw.items():
-            print('broadcasting', 'message')
             broadcast_chats(s, lambda _, id: updater.bot.send_message(id, message), filter)
 
 
