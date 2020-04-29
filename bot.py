@@ -1,6 +1,3 @@
-import sys
-print(sys.argv)
-
 from telegram.ext import run_async
 import os
 import requests
@@ -102,7 +99,7 @@ def drop_tables(bot, update):
 def add_user(session, bot, update):
     user = update.message.from_user
     session.add(User(name=user.username, id=user.id))
-    session.add(Watch(filter='announces', chat_id=update.message.chat.id))
+    session.add(Watch(filter='announces', chat_id=update.message.chat))
 
 
 def gen_fname():
