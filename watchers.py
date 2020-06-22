@@ -3,6 +3,15 @@ import time
 import psutil
 from getpass import getuser as currentuser
 import logging
+import subprocess
+
+
+def check_temp(tag, crit):
+    def func():
+        num = int(open('/sys/class/thermal/thermal_zone0/temp').read()) / 1000
+        if num > crit:
+            return tag, "acpi temperature %.1f'C" % (num,)
+    return func
 
 
 def check_memory():
@@ -31,7 +40,7 @@ def check_users():
             yield None
 
 
-watchers = [check_memory, iter(check_users()).__next__]
+watchers = [check_memory, iter(check_users()).__next__, check_temp('alerts', 74), check_temp('temp', 0)]
 
 
 def run(broadcaster, sleep=1):

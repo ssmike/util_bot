@@ -99,7 +99,7 @@ def drop_tables(bot, update):
 def add_user(session, bot, update):
     user = update.message.from_user
     session.add(User(name=user.username, id=user.id))
-    session.add(Watch(filter='announces', chat_id=update.message.chat))
+    session.add(Watch(filter='announces', chat_id=update.message.chat.id))
 
 
 def gen_fname():
@@ -116,7 +116,7 @@ def download(url):
 
 
 @command('bookmark')
-@check_role('user')
+@check_role('trusted')
 @with_session
 def add_url(session, bot, update):
     cmd, data = update.message.text.split(' ', 2)[1:]
@@ -133,7 +133,7 @@ def add_url(session, bot, update):
 
 
 @command('fetch')
-@check_role('user')
+@check_role('trusted')
 @run_async
 @replyerrors
 def send_doc(bot, update):
@@ -161,15 +161,14 @@ def send_doc(bot, update):
             update.message.reply_document(fin, quote=True)
         os.remove(fname)
 
-
 def notifier(kw):
     with make_session() as s:
-        for filter, message in kw:
+        for filter, message in kw.items():
             broadcast_chats(s, lambda _, id: updater.bot.send_message(id, message), filter)
 
 
 updater.start_polling()
-watchers.run(notifier, os.getenv('PERIODIC_SLEEP', 60))
+watchers.run(notifier, int(os.getenv('PERIODIC_SLEEP', 60)))
 
 log.info("started")
 updater.idle()
