@@ -53,7 +53,6 @@ def free(bot, update):
 @command('deploy')
 @owner('ssmike')
 def deploy(bot, update):
-    with_session(broadcast_chats)(lambda _, chat: bot.send_message(chat, 'deploying new version'), 'announces')
     for command in [['git', 'checkout', '-f'],
                     ['git', 'pull'],
                     ['pip', 'install', '-r', 'requirements.txt']]:
