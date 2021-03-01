@@ -5,11 +5,10 @@ import subprocess
 import logging
 import shutil
 import uuid
-from base import Bookmark, Watch, Role, User, drop, make_session, with_session
+from base import Bookmark, Watch, User, drop, make_session, with_session
 from screenshot import make_screenshot
 import watchers
-from tgutil import updater, broadcast_chats, TgHandler, command, guard, retry, replyerrors, check_role, owner
-import acl
+from tgutil import updater, broadcast_chats, TgHandler, command, replyerrors, check_role, owner
 
 log = logging.getLogger(__name__)
 logging.getLogger().addHandler(TgHandler(logging.INFO))
@@ -53,11 +52,11 @@ def free(bot, update):
 @command('deploy')
 @owner('ssmike')
 def deploy(bot, update):
-    for command in [['git', 'checkout', '-f'],
-                    ['git', 'pull'],
-                    ['pip', 'install', '-r', 'requirements.txt']]:
-        log.info("%s", command)
-        subprocess.check_call(command)
+    for cmd in [['git', 'checkout', '-f'],
+                ['git', 'pull'],
+                ['pip', 'install', '-r', 'requirements.txt']]:
+        log.info("%s", cmd)
+        subprocess.check_call(cmd)
     log.info("%s", ['python', 'bot.py'])
     os.execlp('python', 'python', 'bot.py')
 
@@ -159,6 +158,7 @@ def send_doc(bot, update):
         with open(fname, 'rb') as fin:
             update.message.reply_document(fin, quote=True)
         os.remove(fname)
+
 
 def notifier(kw):
     with make_session() as s:

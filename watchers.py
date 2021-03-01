@@ -3,7 +3,6 @@ import time
 import psutil
 from getpass import getuser as currentuser
 import logging
-import subprocess
 
 
 def check_temp(tag, crit):
@@ -54,7 +53,6 @@ def run(broadcaster, sleep=1):
                         result.__setitem__(*res)
                 except Exception as e:
                     logging.getLogger(__name__).exception(e)
-
 
             broadcaster(result)
             time.sleep(sleep)

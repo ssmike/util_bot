@@ -10,7 +10,8 @@ options.add_argument('--window-size=1920,3080')
 def make_screenshot(url, fname, sleep=None):
     browser = Chrome(chrome_options=options)
     browser.get(url)
-    if sleep: time.sleep(sleep)
+    if sleep:
+        time.sleep(sleep)
     browser.save_screenshot(fname)
     browser.close()
 

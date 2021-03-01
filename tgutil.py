@@ -9,6 +9,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(level
 
 log = logging.getLogger(__name__)
 
+
 def broadcast_chats(session, func, *filters):
     ids = set()
     for watch in session.query(Watch).filter(Watch.filter.in_(filters)).all():
@@ -26,6 +27,7 @@ class TgHandler(logging.Handler):
 
     def emit(self, entry):
         message = self.format(entry)[-4096:]
+
         def send(_, chat):
             # avoid hitting telegram limits
             try:
@@ -41,6 +43,7 @@ def command(command):
         updater.dispatcher.add_handler(CommandHandler(command, func))
         return func
     return decorator
+
 
 def replyerrors(func):
     def result(bot, update):
@@ -78,6 +81,7 @@ def retry(cnt):
                         raise e
         return handler
     return decorator
+
 
 def check_role(role_name):
     @with_session
