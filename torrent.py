@@ -32,4 +32,4 @@ def add_torrent(bot, update):
     url = update.message.text.split(' ', 1)[1]
     target = _dir
     _client.add_torrent(torrent=url, timeout=_timeout, download_dir=target)
-    update.message.reply_text('downloading to %s' % (target,))
+    update.message.reply_text('downloading to %s' % (target,), quote=True)
