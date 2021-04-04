@@ -8,6 +8,7 @@ import uuid
 from base import Bookmark, Watch, User, drop, make_session, with_session
 from screenshot import make_screenshot
 import watchers
+import torrent
 from tgutil import updater, broadcast_chats, TgHandler, command, replyerrors, check_role, owner
 
 log = logging.getLogger(__name__)
