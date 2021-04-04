@@ -10,8 +10,6 @@ from acl import check_role
 _log = logging.getLogger(__name__)
 
 try:
-    print(os.getenv('TRANSMISSION_CONF'))
-
     _client = torrent.Client(**json.loads(os.getenv('TRANSMISSION_CONF')))
     _timeout = int(os.getenv('TRANSMISSION_RPC_TIMEOUT', 10))
     _dir = os.getenv('TRANSMISSION_DOWNLOAD_DIR')
