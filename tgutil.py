@@ -102,7 +102,7 @@ def check_user_for_role(session, role_name, id_):
 def check_role(role_name):
     def check(update):
         return check_user_for_role(role_name, update.message.from_user.id)
-    return guard(check, "you are not {}".format(role_name))
+    return guard(check, "you have not {} role".format(role_name))
 
 
 def owner(*users):
