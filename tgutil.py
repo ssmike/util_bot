@@ -1,9 +1,9 @@
-from telegram.ext import Updater, CommandHandler
+from telegram.ext import Updater, CommandHandler, CallbackQueryHandler
 from base import Watch, Role, User, with_session
 import logging
 import os
 
-updater = Updater(os.environ['TELEGRAM_TOKEN'], workers=8)
+updater = Updater(os.environ['TELEGRAM_TOKEN'], workers=8, use_context=False)
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
@@ -36,6 +36,13 @@ class TgHandler(logging.Handler):
                 "to avoid loops"
                 print(str(e))
         with_session(broadcast_chats)(send, 'log')
+
+
+def callback(pattern):
+    def decorator(func):
+        updater.dispatcher.add_handler(CallbackQueryHandler(func, pattern=pattern))
+        return func
+    return decorator
 
 
 def command(command):
@@ -83,14 +90,18 @@ def retry(cnt):
     return decorator
 
 
+@with_session
+def check_user_for_role(session, role_name, id_):
+    return session.query(User)\
+            .filter(User.id == id_)\
+            .join(User.roles)\
+            .filter(Role.name == role_name)\
+            .first()
+
+
 def check_role(role_name):
-    @with_session
-    def check(session, update):
-        return session.query(User)\
-                .filter(User.id == update.message.from_user.id)\
-                .join(User.roles)\
-                .filter(Role.name == role_name)\
-                .first()
+    def check(update):
+        return check_user_for_role(role_name, update.message.from_user.id)
     return guard(check, "you are not {}".format(role_name))
 
 
