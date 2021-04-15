@@ -1,15 +1,13 @@
 from telegram.ext import run_async
 import os
-import requests
 import subprocess
 import logging
-import shutil
-import uuid
-from base import Bookmark, Watch, User, drop, make_session, with_session
-from screenshot import make_screenshot
+from base import Watch, User, drop, make_session, with_session
 import watchers
-import torrent
 from tgutil import updater, broadcast_chats, TgHandler, command, replyerrors, check_role, owner
+
+import torrent  # noqa
+import fetch  # noqa
 
 log = logging.getLogger(__name__)
 logging.getLogger().addHandler(TgHandler(logging.INFO))
@@ -99,66 +97,6 @@ def add_user(session, bot, update):
     user = update.message.from_user
     session.add(User(name=user.username, id=user.id))
     session.add(Watch(filter='announces', chat_id=update.message.chat.id))
-
-
-def gen_fname():
-    os.makedirs('downloads', exist_ok=True)
-    return os.path.join('downloads', uuid.uuid4().hex)
-
-
-def download(url):
-    with requests.get(url, verify=False, stream=True) as resp:
-        fname = gen_fname()
-        with open(fname, 'wb') as fout:
-            shutil.copyfileobj(resp.raw, fout)
-        return fname
-
-
-@command('bookmark')
-@check_role('trusted')
-@with_session
-def add_url(session, bot, update):
-    cmd, data = update.message.text.split(' ', 2)[1:]
-    if cmd == 'add':
-        alias, url = data.split(' ', 1)
-        user = session.query(User).filter(User.id == update.message.from_user.id).one()
-        session.add(Bookmark(shortname=alias, url=url, user=user))
-    elif cmd == 'rm':
-        urls = data.split(' ')
-        session.query(Bookmark)\
-               .filter(Bookmark.user_id == update.message.from_user.id)\
-               .filter(Bookmark.shortname.in_(urls))\
-               .delete(synchronize_session='fetch')
-
-
-@command('fetch')
-@check_role('trusted')
-@run_async
-@replyerrors
-def send_doc(bot, update):
-    args = update.message.text.split(' ', 3)
-    user_id = update.message.from_user.id
-    fname = None
-    with make_session() as session:
-        user = session.query(User).filter(User.id == update.message.from_user.id).one()
-        if len(args) < 2:
-            resp = "\n".join("%s: %s" % (b.shortname, b.url) for b in user.bookmarks)
-            update.message.reply_text(resp, quote=True)
-        else:
-            explicit_sleep = None
-            if len(args) >= 3:
-                explicit_sleep = int(args[1])
-            url = session.query(Bookmark)\
-                         .filter(Bookmark.user_id == user_id)\
-                         .filter(Bookmark.shortname == args[-1])\
-                         .one().url
-            fname = gen_fname() + ".png"
-
-    if fname:
-        make_screenshot(url, fname, explicit_sleep)
-        with open(fname, 'rb') as fin:
-            update.message.reply_document(fin, quote=True)
-        os.remove(fname)
 
 
 def notifier(kw):
