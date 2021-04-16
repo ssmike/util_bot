@@ -16,7 +16,7 @@ def broadcast_chats(session, func, *filters):
         if watch.chat_id not in ids:
             ids.add(watch.chat_id)
             try:
-                func(session, watch.chat_id)
+                func(watch.chat_id)
             except Exception as e:
                 log.exception(e)
 
@@ -28,7 +28,7 @@ class TgHandler(logging.Handler):
     def emit(self, entry):
         message = self.format(entry)[-4096:]
 
-        def send(_, chat):
+        def send(chat):
             # avoid hitting telegram limits
             try:
                 updater.bot.send_message(chat, message)

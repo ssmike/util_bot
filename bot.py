@@ -87,7 +87,7 @@ def toggle_logging(session, bot, update):
 @replyerrors
 def drop_tables(bot, update):
     tables = update.message.text.split(' ')[1:]
-    with_session(broadcast_chats)(lambda _, chat: bot.send_message(chat, 'dropping {}'.format(tables)), 'announces')
+    with_session(broadcast_chats)(lambda chat: bot.send_message(chat, 'dropping {}'.format(tables)), 'announces')
     drop(tables)
 
 
@@ -102,7 +102,7 @@ def add_user(session, bot, update):
 def notifier(kw):
     with make_session() as s:
         for filter, message in kw.items():
-            broadcast_chats(s, lambda _, id: updater.bot.send_message(id, message), filter)
+            broadcast_chats(s, lambda chat: updater.bot.send_message(chat, message), filter)
 
 
 updater.start_polling()
