@@ -27,7 +27,7 @@ def download(url):
 @command('bookmark')
 @check_role('fetcher')
 @with_session
-def add_url(session, bot, update):
+def add_url(session, update, context):
     cmd, data = update.message.text.split(' ', 2)[1:]
     if cmd == 'add':
         alias, url = data.split(' ', 1)
@@ -45,7 +45,7 @@ def add_url(session, bot, update):
 @check_role('fetcher')
 @run_async
 @replyerrors
-def send_doc(bot, update):
+def send_doc(update, context):
     args = update.message.text.split(' ', 3)
     user_id = update.message.from_user.id
     fname = None

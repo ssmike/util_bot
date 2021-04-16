@@ -3,7 +3,7 @@ from base import Watch, Role, User, with_session
 import logging
 import os
 
-updater = Updater(os.environ['TELEGRAM_TOKEN'], workers=8, use_context=False)
+updater = Updater(os.environ['TELEGRAM_TOKEN'], workers=8, use_context=True)
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
@@ -53,9 +53,9 @@ def command(command):
 
 
 def replyerrors(func):
-    def result(bot, update):
+    def result(update, context):
         try:
-            func(bot, update)
+            func(update, context)
         except Exception as e:
             update.message.reply_text('error: ' + str(e), quote=True)
             raise e
@@ -64,9 +64,9 @@ def replyerrors(func):
 
 def guard(predicate, message=None):
     def decorator(func):
-        def handler(bot, update):
+        def handler(update, context):
             if predicate(update):
-                func(bot, update)
+                func(update, context)
             else:
                 if message is not None:
                     update.message.reply_text(message, quote=True)
@@ -77,10 +77,10 @@ def guard(predicate, message=None):
 
 def retry(cnt):
     def decorator(func):
-        def handler(bot, update):
+        def handler(update, context):
             for i in range(cnt):
                 try:
-                    func(bot, update)
+                    func(update, context)
                     break
                 except Exception as e:
                     log.exception(e)

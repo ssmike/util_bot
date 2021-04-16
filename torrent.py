@@ -26,7 +26,7 @@ def _parse_callback_data(_str):
 
 
 @callback('^torrent')
-def torrent_callback(bot, update):
+def torrent_callback(update, context):
     assert check_user_for_role('user', update.callback_query.from_user.id)
 
     start_message = update.callback_query.message.reply_to_message
@@ -40,7 +40,7 @@ def torrent_callback(bot, update):
 @command('torrent')
 @check_role('user')
 @replyerrors
-def add_torrent(bot, update):
+def add_torrent(update, context):
     assert update.message.text.startswith('/torrent')
     segments = update.message.text.split(' ')
     assert len(segments) in {2, 3}, 'usage: url [dir]'

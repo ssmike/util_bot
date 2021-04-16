@@ -15,7 +15,7 @@ def parse_role_users(text):
 @command('new_role')
 @check_role('admin')
 @with_session
-def add_role(session, bot, update):
+def add_role(session, update, context):
     role = update.message.text.split(' ', 1)[1]
     session.add(Role(name=role))
 
@@ -23,7 +23,7 @@ def add_role(session, bot, update):
 @command('acl_init')
 @owner('ssmike')
 @replyerrors
-def clr_acl(bot, update):
+def clr_acl(update, context):
     with make_session() as session:
         watch_role = Role(name='watcher')
         admin_role = Role(name='admin')
@@ -38,7 +38,7 @@ def clr_acl(bot, update):
 @check_role('admin')
 @replyerrors
 @with_session
-def add_roles(session, bot, update):
+def add_roles(session, update, context):
     text = update.message.text
     names, role_names = parse_role_users(text)
     for user, role in session.query(User, Role) \
@@ -51,7 +51,7 @@ def add_roles(session, bot, update):
 @check_role('admin')
 @replyerrors
 @with_session
-def del_roles(session, bot, update):
+def del_roles(session, update, context):
     text = update.message.text
     names, role_names = parse_role_users(text)
     for user, role in session.query(User, Role) \
@@ -63,7 +63,7 @@ def del_roles(session, bot, update):
 @command('acl_list')
 @check_role('admin')
 @with_session
-def list_users(session, bot, update):
+def list_users(session, update, context):
     name = update.message.text.split(' ')[1]
     role = session.query(Role).filter(Role.name == name).one()
     result = []

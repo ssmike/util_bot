@@ -15,14 +15,14 @@ logging.getLogger().addHandler(TgHandler(logging.INFO))
 
 
 @command('ping')
-def ping(bot, update):
+def ping(update, context):
     update.message.reply_text('pong')
 
 
 @command('dump')
 @owner('ssmike')
-def dump(bot, update):
-    update.message.reply_text("{}\n{}".format(bot, update))
+def dump(update, context):
+    update.message.reply_text("{}\n{}".format(update, context))
 
 
 def get_call_result(command):
@@ -38,20 +38,20 @@ def get_call_result(command):
 @check_role('admin')
 @run_async
 @replyerrors
-def shell(bot, update):
+def shell(update, context):
     command = update.message.text.split(' ', 1)[1]
     update.message.reply_text(get_call_result(command), quote=True)
 
 
 @command('free')
 @check_role('user')
-def free(bot, update):
+def free(update, context):
     update.message.reply_text(get_call_result('free -m'), quote=True)
 
 
 @command('deploy')
 @owner('ssmike')
-def deploy(bot, update):
+def deploy(update, context):
     for cmd in [['git', 'checkout', '-f'],
                 ['git', 'pull'],
                 ['pip', 'install', '-r', 'requirements.txt']]:
@@ -64,7 +64,7 @@ def deploy(bot, update):
 @command('watch')
 @check_role('watcher')
 @with_session
-def toggle_logging(session, bot, update):
+def toggle_logging(session, update, context):
     chat_id = update.message.chat.id
     tokens = update.message.text.split(' ', 2)
     if len(tokens) < 2:
@@ -86,15 +86,15 @@ def toggle_logging(session, bot, update):
 @command('drop')
 @check_role('admin')
 @replyerrors
-def drop_tables(bot, update):
+def drop_tables(update, context):
     tables = update.message.text.split(' ')[1:]
-    with_session(broadcast_chats)(lambda chat: bot.send_message(chat, 'dropping {}'.format(tables)), 'announces')
+    with_session(broadcast_chats)(lambda chat: context.bot.send_message(chat, 'dropping {}'.format(tables)), 'announces')
     drop(tables)
 
 
 @command('start')
 @with_session
-def add_user(session, bot, update):
+def add_user(session, update, context):
     user = update.message.from_user
     session.add(User(name=user.username, id=user.id))
     session.add(Watch(filter='announces', chat_id=update.message.chat.id))
