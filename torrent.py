@@ -26,7 +26,7 @@ def _parse_callback_data(_str):
 
 
 @callback('^torrent')
-def add_torrent(bot, update):
+def torrent_callback(bot, update):
     assert check_user_for_role('user', update.callback_query.from_user.id)
 
     start_message = update.callback_query.message.reply_to_message
@@ -42,10 +42,16 @@ def add_torrent(bot, update):
 @replyerrors
 def add_torrent(bot, update):
     assert update.message.text.startswith('/torrent')
-    url = update.message.text.split(' ', 1)[1]
+    segments = update.message.text.split(' ')
+    assert len(segments) in {2, 3}, 'usage: url [dir]'
+    if len(segments) == 3:
+        url, _dir = segments[1:]
+        _client.add_torrent(torrent=url, timeout=_timeout, download_dir=_dir)
 
-    keyboard = InlineKeyboardMarkup([[InlineKeyboardButton(_dir, callback_data=_callback_data(_dir))]
-        for _dir in {torrent.downloadDir for torrent in _client.get_torrents()}],
-        one_time_keyboard=True)
+        update.message.reply_text('downloading to %s' % (_dir,), quote=True)
+    else:
+        keyboard = InlineKeyboardMarkup([[InlineKeyboardButton(_dir, callback_data=_callback_data(_dir))]
+                                        for _dir in {torrent.downloadDir for torrent in _client.get_torrents()}],
+                                        one_time_keyboard=True)
 
-    update.message.reply_text('pick location', reply_markup=keyboard, quote=True)
+        update.message.reply_text('pick location', reply_markup=keyboard, quote=True)
