@@ -5,19 +5,45 @@ import psutil
 from getpass import getuser as currentuser
 import logging
 
+watchers = []
+
+
+def add_watcher(func):
+    watchers.append(func)
+    return func
+
+
+def bind(*args, **kwargs):
+    def decorator(func):
+        def result():
+            return func(*args, **kwargs)
+        return result
+    return decorator
+
+
+def bind_generator(*args, **kwargs):
+    def decorator(func):
+        return iter(func(*args, **kwargs)).__next__
+    return decorator
+
 
 def check_temp(tag, crit):
-    def func():
-        _base = '/sys/class/thermal/'
-        while True:
-            for _file in os.listdir(_base):
-                if _file.startswith('thermal_zone'):
-                    num = int(open('/sys/class/thermal/%s/temp' % (_file,)).read()) / 1000
-                    if num > crit:
-                        yield tag, "%s %.1f'C" % (_file, num,)
-    return iter(func()).__next__
+    _base = '/sys/class/thermal/'
+    found_temps = []
+    for _file in os.listdir(_base):
+        if _file.startswith('thermal_zone'):
+            num = int(open('/sys/class/thermal/%s/temp' % (_file,)).read()) / 1000
+            if num > crit:
+                found_temps.append((num, (tag, "%s %.1f'C" % (_file, num,))))
+    if found_temps:
+        return max(found_temps)[1]
 
 
+add_watcher(bind('alerts', 74)(check_temp))
+add_watcher(bind('temp', 0)(check_temp))
+
+
+@add_watcher
 def check_memory():
     mem = psutil.virtual_memory()
     av = mem.available / 2 ** 30
@@ -27,6 +53,8 @@ def check_memory():
         return 'alerts', 'critical memory usage {:.2f}/{:.2f}'.format(total - av, total)
 
 
+@add_watcher
+@bind_generator()
 def check_users():
     def get_list():
         return {user.name for user in psutil.users()}.union({currentuser()})
@@ -42,9 +70,6 @@ def check_users():
             yield 'logins', 'detected login for ' + ', '.join(diff)
         else:
             yield None
-
-
-watchers = [check_memory, iter(check_users()).__next__, check_temp('alerts', 74), check_temp('temp', 0)]
 
 
 def run(broadcaster, sleep=1):
