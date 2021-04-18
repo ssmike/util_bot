@@ -8,7 +8,7 @@ import operator as op
 # supported operators
 operators = {ast.Add: op.add, ast.Sub: op.sub, ast.Mult: op.mul,
              ast.Div: op.truediv, ast.Pow: op.pow, ast.BitXor: op.xor,
-             ast.USub: op.neg}
+             ast.USub: op.neg, ast.Mod: op.mod}
 
 def eval_expr(expr):
     """
