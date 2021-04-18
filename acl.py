@@ -1,5 +1,8 @@
 from tgutil import command, replyerrors, check_role, owner
 from base import Role, User, with_session, make_session
+import logging
+
+_log = logging.getLogger(__name__)
 
 
 def parse_role_users(text):
@@ -23,15 +26,28 @@ def add_role(session, update, context):
 @command('acl_init')
 @owner('ssmike')
 @replyerrors
-def clr_acl(update, context):
-    with make_session() as session:
-        watch_role = Role(name='watcher')
-        admin_role = Role(name='admin')
-        user_role = Role(name='user')
-        session.add_all([user_role, admin_role, watch_role])
-    with make_session() as session:
-        user = User(name='ssmike', id=update.message.from_user.id, roles=[admin_role, watch_role, user_role])
-        session.add(user)
+def fix_acl(update, context):
+    try:
+        with make_session() as session:
+            session.add(User(name='ssmike', id=update.message.from_user.id))
+    except Exception as e:
+        _log.exception(e)
+
+    roles = ('watcher', 'admin', 'user')
+    for role in roles:
+        try:
+            with make_session() as session:
+                session.add(Role(name=role))
+        except Exception as e:
+            _log.exception(e)
+
+        try:
+            with make_session() as session:
+                user = session.query(User).filter(User.name == 'ssmike').one()
+                role = session.query(Role).filter(Role.name == role).one()
+                user.roles.append(role)
+        except Exception as e:
+            _log.exception(e)
 
 
 @command('acl_add')
