@@ -8,12 +8,13 @@ import logging
 def check_temp(tag, crit):
     def func():
         _base = '/sys/class/thermal/'
-        for _file in os.listdir(_base):
-            if _file.startswith('thermal_zone'):
-                num = int(open('/sys/class/thermal/%s/temp' % (_file,)).read()) / 1000
-                if num > crit:
-                    return tag, "%s %.1f'C" % (_file, num,)
-    return func
+        while True:
+            for _file in os.listdir(_base):
+                if _file.startswith('thermal_zone'):
+                    num = int(open('/sys/class/thermal/%s/temp' % (_file,)).read()) / 1000
+                    if num > crit:
+                        yield tag, "%s %.1f'C" % (_file, num,)
+    return iter(func()).__next__
 
 
 def check_memory():
