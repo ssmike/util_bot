@@ -7,9 +7,12 @@ import logging
 
 def check_temp(tag, crit):
     def func():
-        num = int(open('/sys/class/thermal/thermal_zone0/temp').read()) / 1000
-        if num > crit:
-            return tag, "acpi temperature %.1f'C" % (num,)
+        _base = '/sys/class/thermal/'
+        for _file in os.listdir(_base):
+            if _file.startswith('thermal_zone'):
+                num = int(open('/sys/class/thermal/%s/temp' % (_file,)).read()) / 1000
+                if num > crit:
+                    return tag, "%s %.1f'C" % (_file, num,)
     return func
 
 
