@@ -4,7 +4,9 @@ import subprocess
 import logging
 from base import Watch, User, drop, make_session, with_session
 import watchers
-from tgutil import updater, broadcast_chats, TgHandler, command, replyerrors, check_role, owner
+
+import tgutil as util
+from tgutil import broadcast_chats, command, replyerrors, check_role, owner
 
 import torrent  # noqa
 import fetch  # noqa
@@ -12,7 +14,7 @@ import acl # noqa
 import bc # noqa
 
 log = logging.getLogger(__name__)
-logging.getLogger().addHandler(TgHandler(logging.INFO))
+logging.getLogger().addHandler(util.TgHandler(logging.INFO))
 
 
 @command('ping')
@@ -107,7 +109,8 @@ def notifier(kw):
             broadcast_chats(s, lambda chat: updater.bot.send_message(chat, message), filter)
 
 
-updater.start_polling()
+util.create_updater()
+util.updater.start_polling()
 watchers.run(notifier, int(os.getenv('PERIODIC_SLEEP', 60)))
 
 log.info("started")

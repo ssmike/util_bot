@@ -3,11 +3,18 @@ from base import Watch, Role, User, with_session
 import logging
 import os
 
-updater = Updater(os.environ['TELEGRAM_TOKEN'], workers=8, use_context=True)
+handlers = []
+updater = None
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-
 log = logging.getLogger(__name__)
+
+
+def create_updater():
+    global updater
+    updater = Updater(os.environ['TELEGRAM_TOKEN'], workers=8, use_context=True)
+    for handler in handlers:
+        updater.dispatcher.add_handler(handler)
 
 
 def broadcast_chats(session, func, *filters):
@@ -38,23 +45,29 @@ class TgHandler(logging.Handler):
         with_session(broadcast_chats)(send, 'log')
 
 
+def add_handler(handler):
+    handlers.append(handler)
+    if updater is not None:
+        updater.dispatcher.add_handler(handler)
+
+
 def callback(pattern):
     def decorator(func):
-        updater.dispatcher.add_handler(CallbackQueryHandler(func, pattern=pattern))
+        add_handler(CallbackQueryHandler(func, pattern=pattern))
         return func
     return decorator
 
 
 def command(command):
     def decorator(func):
-        updater.dispatcher.add_handler(CommandHandler(command, func))
+        add_handler(CommandHandler(command, func))
         return func
     return decorator
 
 
 def inline(pattern):
     def decorator(func):
-        updater.dispatcher.add_handler(InlineQueryHandler(func, pattern=pattern))
+        add_handler(InlineQueryHandler(func, pattern=pattern))
         return func
     return decorator
 
