@@ -106,7 +106,7 @@ def add_user(session, update, context):
 def notifier(kw):
     with make_session() as s:
         for filter, message in kw.items():
-            broadcast_chats(s, lambda chat: updater.bot.send_message(chat, message), filter)
+            broadcast_chats(s, lambda chat: util.updater.bot.send_message(chat, message), filter)
 
 
 util.create_updater()
@@ -114,4 +114,4 @@ util.updater.start_polling()
 watchers.run(notifier, int(os.getenv('PERIODIC_SLEEP', 60)))
 
 log.info("started")
-updater.idle()
+util.updater.idle()
