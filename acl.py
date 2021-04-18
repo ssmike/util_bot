@@ -33,7 +33,7 @@ def fix_acl(update, context):
     except Exception as e:
         _log.exception(e)
 
-    roles = ('watcher', 'admin', 'user')
+    roles = ('watcher', 'admin', 'user', 'fetcher')
     for role in roles:
         try:
             with make_session() as session:

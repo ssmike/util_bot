@@ -7,8 +7,8 @@ from contextlib import contextmanager
 Base = declarative_base()
 
 roles_association = Table('roles_association', Base.metadata,
-    Column('left_id', String, ForeignKey('roles.name')),
-    Column('right_id', Integer, ForeignKey('users.id'))
+    Column('role', String, ForeignKey('roles.name')),
+    Column('user', Integer, ForeignKey('users.id'))
 )
 
 
@@ -55,6 +55,7 @@ def drop_all():
 def drop(tables):
     for name in tables:
         Base.metadata.tables[name].drop()
+        Base.metadata.tables[name].create()
 
 
 @contextmanager
