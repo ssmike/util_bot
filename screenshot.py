@@ -8,6 +8,7 @@ options.add_argument('--window-size=1920,3080')
 
 
 def make_screenshot(url, fname, sleep=None):
+    assert 'file:' not in url and url.startswith('http')
     browser = Chrome(chrome_options=options)
     browser.get(url)
     if sleep:

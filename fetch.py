@@ -69,3 +69,22 @@ def send_doc(update, context):
         with open(fname, 'rb') as fin:
             update.message.reply_document(fin, quote=True)
         os.remove(fname)
+
+
+@command('render')
+@check_role('fetcher')
+@run_async
+@replyerrors
+def render_doc(update, context):
+    args = update.message.text.split(' ')[1:]
+    assert len(args) in {1, 2}
+    url = args[-1]
+    explicit_sleep = None
+    if len(args) == 2:
+        explicit_sleep = int(args[0])
+
+    fname = gen_fname() + ".png"
+    make_screenshot(url, fname, explicit_sleep)
+    with open(fname, 'rb') as fin:
+        update.message.reply_document(fin, quote=True)
+    os.remove(fname)
