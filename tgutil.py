@@ -1,4 +1,4 @@
-from telegram.ext import Updater, CommandHandler, CallbackQueryHandler
+from telegram.ext import Updater, CommandHandler, CallbackQueryHandler, InlineQueryHandler
 from base import Watch, Role, User, with_session
 import logging
 import os
@@ -48,6 +48,13 @@ def callback(pattern):
 def command(command):
     def decorator(func):
         updater.dispatcher.add_handler(CommandHandler(command, func))
+        return func
+    return decorator
+
+
+def inline(pattern):
+    def decorator(func):
+        updater.dispatcher.add_handler(InlineQueryHandler(func, pattern=pattern))
         return func
     return decorator
 

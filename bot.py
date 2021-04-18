@@ -9,6 +9,7 @@ from tgutil import updater, broadcast_chats, TgHandler, command, replyerrors, ch
 import torrent  # noqa
 import fetch  # noqa
 import acl # noqa
+import bc # noqa
 
 log = logging.getLogger(__name__)
 logging.getLogger().addHandler(TgHandler(logging.INFO))
