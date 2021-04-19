@@ -6,15 +6,21 @@ import os
 handlers = []
 updater = None
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 log = logging.getLogger(__name__)
 
 
-def create_updater():
+def configure_logging():
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    logging.getLogger().addHandler(TgHandler(logging.INFO))
+
+
+def get_updater():
     global updater
-    updater = Updater(os.environ['TELEGRAM_TOKEN'], workers=8, use_context=True)
-    for handler in handlers:
-        updater.dispatcher.add_handler(handler)
+    if updater is None:
+        updater = Updater(os.environ['TELEGRAM_TOKEN'], workers=8, use_context=True)
+        for handler in handlers:
+            updater.dispatcher.add_handler(handler)
+    return updater
 
 
 def broadcast_chats(session, func, *filters):
